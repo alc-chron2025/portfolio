@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="人事・労務向けWEBアプリ展示会。無料体験＆モニター募集中。社会人基礎力診断、離職コスト計算、心理的安全性チェックなど多彩なツールを紹介。">
+
+  <title>WEBアプリ展覧会</title>
+  <style>
+body {
+  font-family: 'Helvetica', sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #fdf6e3;
+  color: #333;
+}
+
+header {
+  text-align: center;
+  padding: 2rem;
+  background: url('展示会3.png') no-repeat center center;
+  background-size: cover;
+  color: #fff;
+  border-bottom: 2px solid #ccc;
+  position: relative;
+}
+
+header::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 0;
+}
+
+header h1, header h2, header p {
+  position: relative;
+  z-index: 1;
+}
+
+.expo-booths {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 2rem;
+}
+
+.booth {
+  width: 270px;
+  background: white;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+
+.booth:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.booth h2 {
+  margin-top: 0;
+  font-size: 1.2rem;
+}
+
+.booth p {
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+
+.cta {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.cta:hover {
+  opacity: 0.6;
+  transform: scale(1.05);
+}
+.cta-group a:hover {
+  transform: scale(1.05);
+}
+
+
+/* 色別ブース */
+.red { background: #ffcdd2; }
+.red .cta { background: #f44336; }
+
+.orange { background: #ffe0b2; }
+.orange .cta { background: #ff9800; }
+
+.yellow { background: #fff9c4; }
+.yellow .cta { background: #eece00; color:#fff; }
+
+.green { background: #c8e6c9; }
+.green .cta { background: #4caf50; }
+
+.blue { background: #bbdefb; color: #999; }
+.blue .cta { background: #2196f3; }
+
+.indigo { background: #c5cae9; color: #999; }
+.indigo .cta { background: #3f51b5; }
+
+.purple { background: #e1bee7; }
+.purple .cta { background: #9c27b0; }
+
+.gray { background: #eceff1; color: #999; }
+.gray .cta { background: #999; cursor: not-allowed; pointer-events: none; }
+
+/* 商談ホール */
+#consultation {
+  background: #fff3e0;
+  padding: 2rem;
+  text-align: center;
+  border-top: 2px solid #ccc;
+}
+
+#consultation h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+#consultation p {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+ul.central-left {
+  display: inline-block;
+  text-align: left;
+  padding-left: 1.2em;
+  margin: 0;
+}
+
+#consultation .cta-group a {
+  margin: 0.5rem;
+}
+
+/* プロフィール */
+#profile {
+  text-align: center;
+  padding: 2rem;
+  background: #fafafa;
+}
+
+#profile h2 {
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
+}
+
+#profile p {
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+#profile a {
+  text-decoration: none;
+  color: #0058fc;
+  font-weight: bold;
+}
+
+#profile a:hover {
+  text-decoration: underline;
+  color: #0d47a1;
+}
+
+footer {
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.8rem;
+  color: #777;
+  background: #fdf6e3;
+  border-top: 1px solid #ccc;
+}
+
+/* ツールチップ */
+.tooltip-js {
+  position: absolute;
+  background: rgba(0,0,0,0.85);
+  color: #fff;
+  padding: 0.8rem 1rem;       /* 内側余白を少し大きめに */
+  border-radius: 6px;
+  font-size: 0.85rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 1000;
+  white-space: normal;        /* 長い文は折り返す */
+  max-width: 260px;           /* 最大幅 */
+  width: auto;                /* 最小幅は自動調整 */
+  text-align: left;         /* 文字左揃え */
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    <h1>WEBアプリ展覧会</h1>
+    <h2>－ ポートフォリオ －</h2>
+    <p>この展覧会ではおもに人事・労務分野の<br>コンサルタントの方に向けた<strong style="font-size: 22px; color:#bbf">顧客接点<br>をつくる</strong>WEBアプリを展示しています。</p>
+    <p>各WEBアプリはすべて<strong style="font-size: 22px; color:#bbf">無料で体験</strong>する<br>ことができます。ぜひ、お試しください。</p>
+  </header>
+
+  <section class="expo-booths">
+    <div class="booth red" data-tooltip="社会人基礎力を自己評価して、自身の強みと弱みを見える化できます。">
+      <br>
+      <h2>🌱 社会人力基礎力ブース</h2>
+      <span style="position:absolute; top:8px; left:8px; background:#f44336; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.75rem;">診断系</span>
+      <p>社会人基礎力を自己チェック</p>
+      <a href="https://script.google.com/macros/s/AKfycbywnCukdbOpYKZSamwsbt93jePoQ2P2am2tDhu7-0gEpfOIb7Op9di2d2do_fwie8Lc/exec" class="cta">チェックする</a>
+    </div>
+
+    <div class="booth orange" data-tooltip="組織（チーム）における、心理的安全性と挑戦のバランス状態をマトリクス図にして見える化できます。">
+      <br>
+      <h2>📓 学習と成長ラボブース</h2>
+      <span style="position:absolute; top:8px; left:8px; background:#ff9800; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.75rem;">診断系</span>
+      <p>職場の心理的安全性と挑戦を見える化</p>
+      <a href="#学習と成長" class="cta">診断する</a>
+    </div>
+
+    <div class="booth yellow" data-tooltip="離職コストを金額で見える化することで、危機感をリアルに実感できます。">
+      <br>
+      <h2>🧮 離職コスト計算ブース</h2>
+      <span style="position:absolute; top:8px; left:8px; background:#eece00; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.75rem;">計算系</span>
+      <p>離職コストを数字で見える化する</p>
+      <a href="#離職コスト" class="cta">計算する</a>
+    </div>
+
+    <div class="booth green" data-tooltip="社内教育に応用できる〇×問題コンテンツに挑戦できます。">
+      <br>
+      <h2>✎ 〇×問題ブース</h2>
+      <span style="position:absolute; top:8px; left:8px; background:#4caf50; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.75rem;">学習系</span>
+      <p>社内教育コンテンツに応用できます</p>
+      <a href="#〇×" class="cta">挑戦する</a>
+    </div>
+
+    <div class="booth blue" data-tooltip="準備中のモラールサーベイ1ブースです。">
+      <br>
+      <h2>📈 モラールサーベイ1ブース</h2>
+      <span style="position:absolute; top:8px; left:8px; background:#2196f3; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.75rem;">準備中</span>      
+      <p>近日公開予定</p>
+      <a href="#準備中" class="cta">現在開発中です</a>
+    </div>
+
+    <div class="booth indigo" data-tooltip="準備中のモラールサーベイ2ブースです。">
+      <br>
+      <h2>📊 モラールサーベイ2ブース</h2>
+      <span style="position:absolute; top:8px; left:8px; background:#3f51b5; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.75rem;">準備中</span>
+      <p>近日公開予定</p>
+      <a href="#準備中" class="cta">現在開発中です</a>
+    </div>
+
+    <div class="booth purple" data-tooltip="タロット占いでちょっとした息抜きを体験できます。">
+      <br>
+      <h2>✡ タロット占いブース ✡</h2>
+      <span style="position:absolute; top:8px; left:8px; background:#9c27b0; color:#fff; padding:2px 6px; border-radius:4px; font-size:0.75rem;">エンタメ系</span>
+      <p>占いでちょっと息抜きしませんか？</p>
+      <a href="#占い" class="cta">占ってみる</a>
+    </div>
+  <br>
+  <p>※モラールサーベイ1、モラールサーベイ2については、別途開発中のExcel版モラールサーベイツールの一部を体験できるものを予定しています。</p>
+  </section>
+
+  <!-- 商談ホールセクション -->
+  <section id="consultation">
+    <h2>🤖 モニター募集ブース</h2>
+    <p>
+    ご自身のHPに上記WEBアプリを実装してみるモニターに参加しませんか？<br><br>
+    WEBアプリ画面に、ご自身のロゴマークやHPへのリンクを入れることで、差別化やブランディング効果が期待できます。
+    </p>
+    <p><strong>【無料モニター募集：3枠】</strong></p>
+    <div style="text-align: center; margin-bottom: 1rem;">
+      <ul class="central-left">       
+        <li>WEBアプリを無料で実装して顧客接点をつくる効果があるかどうかご確認ください</li>
+        <li>想定しているモニター期間は2カ月程度です（効果が出るまでに時間がかかると想定）</li>        
+        <li>当HPについて拡散をしていただけるとありがたいです（多くのフィードバックを得るため）</li>
+        <li>モニター体験後、簡単なアンケートで感想や改善点をフィードバックをお願いします</li>
+        <li>また、モニター体験後、希望する方には導入や相談の窓口もご案内させていただきます</li>
+      </ul>
+    </div>
+    <div class="cta-group">
+      <a href="https://docs.google.com/forms/d/xxxxxxxxxxxx" class="cta" style="background:#444;">
+        モニターに応募する
+      </a>
+    </div>
+  </section>
+
+  <!-- 開発者プロフィール -->
+  <section id="profile">    
+    <h2>開発者プロフィール</h2>
+    <img src="profile.png" alt="管理人あるくのイメージ画像" width="120px" height="120px">
+    <p><strong>駆け出しWEBデザイナー：管理人あるく</strong></p>
+    <p><strong>＜ 私が提供できる3つの価値 ＞</strong></p>
+    <div style="text-align: center; margin-bottom: 1rem;">
+      <ul class="central-left" style="list-style-type: decimal;">
+        <li>顧客心理・顧客導線を意図したLP制作（HTML+CSS+JavaScript）</li>
+        <li>顧客接点をつくるためのWEBアプリ／Excelツールの企画・設計・実装</li>
+        <li>Xとnoteを連携した「フロー×ストック」によるWEBマーケティング</li>
+      </ul>
+    </div>   
+    <a href="https://note.com/alc_chron2025">AI活用によるJavaScriptの学習記録『あるく戦記』をnoteにて連載中</a>
+    <p>※note開始3カ月で<strong style="font-size: 18px;">フォロワー1000</strong>&<strong style="font-size: 18px;">エンゲージメント率30%以上</strong>達成!</p>
+  </section>
+
+<footer>
+  © あるく戦記2025. All rights reserved.
+</footer>
+
+<script>
+// リッチツールチップ
+document.addEventListener('DOMContentLoaded', () => {
+  const booths = document.querySelectorAll('.booth');
+
+  const tooltip = document.createElement('div');
+  tooltip.className = 'tooltip-js';
+  document.body.appendChild(tooltip);
+
+  booths.forEach(booth => {
+    booth.addEventListener('mouseenter', () => {
+      tooltip.textContent = booth.dataset.tooltip;
+      tooltip.style.opacity = 1;
+      tooltip.style.transform = 'translateY(-5px)';
+      const rect = booth.getBoundingClientRect();
+      tooltip.style.top = window.scrollY + rect.top - tooltip.offsetHeight - 8 + 'px';
+      tooltip.style.left = window.scrollX + rect.left + rect.width / 2 - tooltip.offsetWidth / 2 + 'px';
+    });
+
+    booth.addEventListener('mousemove', (e) => {
+      tooltip.style.top = e.pageY - tooltip.offsetHeight - 8 + 'px';
+      tooltip.style.left = e.pageX - tooltip.offsetWidth / 2 + 'px';
+    });
+
+    booth.addEventListener('mouseleave', () => {
+      tooltip.style.opacity = 0;
+      tooltip.style.transform = 'translateY(0)';
+    });
+  });
+});
+</script>
+</body>
+</html>
