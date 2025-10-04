@@ -1,0 +1,794 @@
+<<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>社会人基礎力診断チェック</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+    }
+    #startScreen {
+      text-align: center;
+      padding: 30px;
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    #startBtn {
+      background-color: #007bff;
+      color: #fff;
+      padding: 10px 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+
+    #chat-container {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    .question-block {
+      margin-bottom: 20px;
+    }
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .option-btn {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: #fff;
+      cursor: pointer;
+      text-align: left;
+    }
+    .option-btn.selected {
+      background: #1dbfff86;
+      border: 0.5px #007BFF;
+      color: #000;
+    }
+    .none-btn {
+      text-align: center;
+      font-weight: bold;
+      background-color: #ddd;
+    }
+    .next-btn, .restart-btn {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      background: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+    button:hover {
+      opacity: 0.8;
+      background: #0073ffe2;
+      color: #fff;
+    }
+    .result {
+      white-space: pre-line;
+      margin-bottom: 20px;
+    }
+    .action-btn {
+  display: block;
+  width: 340px;
+  max-width: 90%;
+  margin: 10px auto;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 16px;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background-color 0.3s;
+}
+
+/* Xシェアボタン */
+.share-btn {
+  background-color: #1DA1F2;
+  color: #fff;
+  font-weight: bold;
+}
+.share-btn:hover {
+  background-color: #0d8ddb;
+}
+
+.share-btn a {
+  display: inline-block;
+  background-color: #1da1f2;
+  border: 0.5px solid #6600ff;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* 再診断ボタン */
+.ghost {
+  background-color: #333;
+  border: 0.5px solid #666;
+  color: #fff;
+}
+.ghost:hover {
+  background-color: #000;
+}
+
+/* noteプロフィールボタン */
+.note-btn {
+  background-color: #f5f5f5;
+  border: 0.5px solid #666;
+  color: #000;
+}
+.note-btn:hover {
+  background-color: #eaeaea;
+}
+  </style>
+</head>
+<body>
+
+  <div id="startScreen">
+    <h2>社会人基礎力チェック</h2>
+    <p>あなたの社会人基礎力（12種類）を3つの観点から測定します。<br>
+    結果はグラフで表示され、自己分析やキャリア形成に活かせます。</p><br>
+    
+      <p>
+      所要時間 5分程度<br>
+      質問数 15問<br><br>
+      </p><br>
+      <p>
+      最初の12問は<strong>あてはまるものをすべて選択</strong>して回答してください。<br><br>
+      </p><br>      
+    
+    <button id="startBtn">チェックスタート</button>
+    <p>※直感で回答してください</p>
+  </div>
+
+  <div id="chat-container" style="display: none;"></div>
+  <div id="result-buttons" style="margin-top: 20px;"></div>
+
+<script>
+    const startScreen = document.getElementById('startScreen');
+    const chatContainer = document.getElementById('chat-container');
+    const startBtn = document.getElementById('startBtn');
+
+    startBtn.addEventListener('click', () => {
+      startScreen.style.display = 'none';
+      chatContainer.style.display = 'block';
+      showQuestion(currentQuestion); // 質問表示開始
+    });
+
+
+
+// 診断設問データ
+    // ======== 設問データ ========
+    const QUESTIONS = [
+      {
+        category: "action",
+        id: "A",
+        title: "前に踏み出す力",
+        type: "multi",
+        text: "【複数選択可】あなたがよく取る行動パターンは？",
+        options: [
+          { text: "躊躇せずに行動に移す", score: 1 },
+          { text: "自己啓発に積極的に取り組む", score: 1 },
+          { text: "他人より先に自分を打ち出す", score: 1 },
+          { text: "何事も自分ごととして受け止める", score: 1 },
+          { text: "指示を待たず、自分でやるべきことを見つけて動く", score: 1 }
+        ]
+      },
+      {
+        category: "action",
+        id: "B",
+        title: "働きかけ力",
+        type: "multi",
+        text: "【複数選択可】チーム内でのあなたのメンバーに対する関わり方は？",
+        options: [
+          { text: "周囲に声をかけて巻き込む", score: 1 },
+          { text: "意見の少ない人の発言を促す", score: 1 },
+          { text: "自分の目標より全体の調整を優先", score: 1 },
+          { text: "他人を目標に集中させる", score: 1 },
+          { text: "攻撃的な言動は避けている", score: 1 }
+        ]
+      },
+      {
+        category: "action",
+        id: "C",
+        title: "実行力",
+        type: "multi",
+        text: "【複数選択可】あなたの行動スタイルは？",
+        options: [
+          { text: "自分で目標を立てて粘り強く取り組む", score: 1 },
+          { text: "疲れを見せずに行動し続ける", score: 1 },
+          { text: "スピード感を持って動く", score: 1 },
+          { text: "簡単に諦めない", score: 1 },
+          { text: "言われたこと以上のことをやる", score: 1 }
+        ]
+      },
+      {
+        category: "thinking",
+        id: "D",
+        title: "課題発見力",
+        type: "multi",
+        text: "【複数選択可】問題に直面したときのあなたの思考は？",
+        options: [
+          { text: "原因を掘り下げて本質を探る", score: 1 },
+          { text: "あるべき姿とのギャップを意識する", score: 1 },
+          { text: "現象だけでなく内在する原因を考える", score: 1 },
+          { text: "阻害要因を把握して排除に動く", score: 1 },
+          { text: "なぜそうなっているかを常に考える", score: 1 }
+        ]
+      },
+      {
+        category: "thinking",
+        id: "E",
+        title: "計画力",
+        type: "multi",
+        text: "【複数選択可】目標達成に向けた準備で、あなたが意識していることは？",
+        options: [
+          { text: "道筋を立てて進行手順を明確にする", score: 1 },
+          { text: "時間配分や役割分担を事前に考える", score: 1 },
+          { text: "進捗をチェックする体制を整える", score: 1 },
+          { text: "最善のプロセスの複数案を検討する", score: 1 },
+          { text: "常に目標との距離を意識する", score: 1 }
+        ]
+      },
+      {
+        category: "thinking",
+        id: "F",
+        title: "創造力",
+        type: "multi",
+        text: "【複数選択可】課題に取り組むとき、あなたの発想スタイルは？",
+        options: [
+          { text: "既成概念にとらわれず自由に考える", score: 1 },
+          { text: "複数の考えを統合して新しい視点を生む", score: 1 },
+          { text: "慣習に縛られず変革を目指す", score: 1 },
+          { text: "時代の変化を先取りして革新を起こす", score: 1 },
+          { text: "他人の考えをヒントに新しいアイデアを生み出す", score: 1 }
+        ]
+      },
+      {
+        category: "teamwork",
+        id: "G",
+        title: "発信力",
+        type: "multi",
+        text: "【複数選択可】あなたが意見を伝えるとき、意識していることは？",
+        options: [
+          { text: "簡潔に要点をまとめて話す", score: 1 },
+          { text: "気持ちを込めて説得力を持たせる", score: 1 },
+          { text: "相手に理解されるように整理して伝える", score: 1 },
+          { text: "明瞭な発音でスムーズに話す", score: 1 },
+          { text: "相手に視線を向けて話す", score: 1 }
+        ]
+      },
+      {
+        category: "teamwork",
+        id: "H",
+        title: "傾聴力",
+        type: "multi",
+        text: "【複数選択可】相手の話を聞くとき、あなたが意識していることは？",
+        options: [
+          { text: "話しやすい環境をつくる", score: 1 },
+          { text: "相手の気持ちを全身で受け止める", score: 1 },
+          { text: "最後まで話を遮らずに聞く", score: 1 },
+          { text: "要旨を確認しながらフィードバックする", score: 1 },
+          { text: "適切なタイミングで質問して意見を引き出す", score: 1 }
+        ]
+      },
+      {
+        category: "teamwork",
+        id: "I",
+        title: "柔軟性",
+        type: "multi",
+        text: "【複数選択可】意見の違いや立場の違いに直面したとき、あなたはどう対応しますか？",
+        options: [
+          { text: "相手の立場を尊重して理解しようとする", score: 1 },
+          { text: "状況に応じて接し方を変える", score: 1 },
+          { text: "アドバイスを素直に受け入れる", score: 1 },
+          { text: "自分のルールにこだわらない", score: 1 },
+          { text: "自分の案に固執せず、より良い案を受け入れられる", score: 1 }
+        ]
+      },
+      {
+        category: "teamwork",
+        id: "J",
+        title: "状況把握力",
+        type: "multi",
+        text: "【複数選択可】チームで働くとき、あなたが意識していることは？",
+        options: [
+          { text: "自分の役割を理解して行動する", score: 1 },
+          { text: "自分の発言が周囲に与える影響を考える", score: 1 },
+          { text: "グループ全体に気を配る", score: 1 },
+          { text: "利己的な態度をとらない", score: 1 },
+          { text: "全体への影響を意識して行動する", score: 1 }
+        ]
+      },
+      {
+        category: "teamwork",
+        id: "K",
+        title: "規律性",
+        type: "multi",
+        text: "【複数選択可】あなたがルールや約束に対して意識していることは？",
+        options: [
+          { text: "社会のルールに則って行動する", score: 1 },
+          { text: "法や規則を守って信用を維持する", score: 1 },
+          { text: "倫理観を持って公正に対応する", score: 1 },
+          { text: "時間や約束を守る", score: 1 },
+          { text: "決められたことには素直に従う", score: 1 }
+        ]
+      },
+      {
+        category: "teamwork",
+        id: "L",
+        title: "ストレスコントロール力",
+        type: "multi",
+        text: "【複数選択可】ストレスを感じたとき、あなたの対応に近いものは？",
+        options: [
+          { text: "成長の機会だと前向きに捉える", score: 1 },
+          { text: "圧迫状況でも冷静に判断できる", score: 1 },
+          { text: "リラックスして対応できる", score: 1 },
+          { text: "イライラせず安定した気持ちを保つ", score: 1 },
+          { text: "気晴らしの方法を持っている", score: 1 }
+        ]
+      },
+      // ＋α 3問
+      {
+        category: "action",
+        id: "M",
+        title: "アクション（自己認識）",
+        type: "single",
+        text: "【ひとつ選択】あなたは自分自身の🐈前に踏み出す力🐈をどう捉えていますか？",
+        options: [
+          { text: "かなり高いと思っている", score: 3 },
+          { text: "そこそこあると思っている", score: 2 },
+          { text: "あまり高くないがこれから伸ばしていきたい", score: 1 },
+          { text: "高くないがこのままでいい", score: 0 }
+        ]
+      },
+      {
+        category: "thinking",
+        id: "N",
+        title: "シンキング（自己認識）",
+        type: "single",
+        text: "【ひとつ選択】では、あなたは自分自身の🦉考え抜く力🦉をどう捉えていますか？",
+        options: [
+          { text: "かなり高いと思っている", score: 3 },
+          { text: "そこそこあると思っている", score: 2 },
+          { text: "あまり高くないがこれから伸ばしていきたい", score: 1 },
+          { text: "高くないがこのままでいい", score: 0 }
+        ]
+      },
+      {
+        category: "teamwork",
+        id: "O",
+        title: "チームワーク（自己認識）",
+        type: "single",
+        text: "【ひとつ選択】最後の質問です。あなたは自分自身の🐬チームで働く力🐬をどう捉えていますか？",
+        options: [
+          { text: "かなり高いと思っている", score: 3 },
+          { text: "そこそこあると思っている", score: 2 },
+          { text: "あまり高くないがこれから伸ばしていきたい", score: 1 },
+          { text: "高くないがこのままでいい", score: 0 }
+        ]
+      }
+    ];
+
+// 現在の質問番号・回答保存
+let currentQuestion = 0;
+const answers = {};
+const container = document.getElementById('chat-container');
+
+// メッセージ表示
+function showMessage(msg, isBot = true) {
+  const msgEl = document.createElement('div');
+  msgEl.classList.add(isBot ? 'bot-msg' : 'user-msg');
+  //msgEl.textContent = msg;
+  msgEl.innerHTML = msg;
+  container.appendChild(msgEl);
+  container.scrollTop = container.scrollHeight;
+}
+
+// 質問表示
+function showQuestion() {
+  container.innerHTML = "";
+
+  const question = QUESTIONS[currentQuestion];
+  const block = document.createElement('div');
+  block.classList.add('question-block');
+
+  const title = document.createElement('p');
+  title.textContent = `${currentQuestion + 1}.${question.text}`;
+  block.appendChild(title);
+
+  const optionsGrid = document.createElement('div');
+  optionsGrid.classList.add('options-grid');
+
+  let optionsWithNone = [...question.options];
+  if (question.type === "multi") {
+    optionsWithNone.push({ text: "あてはまるものがない", score: 0, isNone: true });
+  }
+
+  optionsWithNone.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.textContent = opt.text;
+    btn.classList.add('option-btn');
+    if (opt.isNone) btn.classList.add('none-btn');
+
+    if (question.type === "multi") {
+      btn.addEventListener('click', () => {
+        if (opt.isNone) {
+          optionsGrid.querySelectorAll('.option-btn').forEach(b => {
+            if (!b.classList.contains('none-btn')) b.classList.remove('selected');
+          });
+          btn.classList.add('selected');
+        } else {
+          optionsGrid.querySelector('.none-btn')?.classList.remove('selected');
+          btn.classList.toggle('selected');
+        }
+      });
+    } else {
+      btn.addEventListener('click', () => {
+        saveAnswer(question.id, [opt]);
+        goToNextQuestion();
+      });
+    }
+    optionsGrid.appendChild(btn);
+  });
+
+  block.appendChild(optionsGrid);
+
+  if (question.type === "multi") {
+    const nextBtn = document.createElement('button');
+    nextBtn.textContent = "次へ進む";
+    nextBtn.classList.add('next-btn');
+    nextBtn.addEventListener('click', () => {
+      const selected = Array.from(block.querySelectorAll('.selected'))
+        .map(btn => optionsWithNone.find(o => o.text === btn.textContent));
+      saveAnswer(question.id, selected);
+      goToNextQuestion();
+    });
+    block.appendChild(nextBtn);
+  }
+
+  container.appendChild(block);
+}
+
+// 回答保存
+function saveAnswer(qid, selectedOptions) {
+  answers[qid] = selectedOptions.map(o => o.text);
+}
+
+// 次の質問へ
+function goToNextQuestion() {
+  currentQuestion++;
+  if (currentQuestion < QUESTIONS.length) {
+    showQuestion();
+  } else {
+    showResult();
+  }
+}
+
+
+
+
+// ---------------------------
+// 集計処理（A～L + MNO）
+// ---------------------------
+function calculateScoresWithMNO(answers) {
+  let scores = {
+    A:0,B:0,C:0,D:0,E:0,F:0,
+    G:0,H:0,I:0,J:0,K:0,L:0,
+    action:0, thinking:0, teamwork:0
+  };
+
+  // 全回答を集計
+  QUESTIONS.forEach(q => {
+    const selected = answers[q.id] || [];
+    selected.forEach(optionText => {
+      const option = q.options.find(o => o.text === optionText);
+      if (!option) return;
+
+      // 個別能力
+      if (scores.hasOwnProperty(q.id)) {
+        scores[q.id] += option.score;
+      }
+
+      // 3大分類
+      if (q.category === "action") scores.action += option.score;
+      if (q.category === "thinking") scores.thinking += option.score;
+      if (q.category === "teamwork") scores.teamwork += option.score;
+    });
+  });
+
+  // M, N, O のスコア取得
+  const M = (answers["M"] && answers["M"].length)
+    ? QUESTIONS.find(q=>q.id==="M").options.find(o => o.text === answers["M"][0]).score
+    : 0;
+  const N = (answers["N"] && answers["N"].length)
+    ? QUESTIONS.find(q=>q.id==="N").options.find(o => o.text === answers["N"][0]).score
+    : 0;
+  const O = (answers["O"] && answers["O"].length)
+    ? QUESTIONS.find(q=>q.id==="O").options.find(o => o.text === answers["O"][0]).score
+    : 0;
+
+  return { scores, M, N, O };
+}
+
+// ---------------------------
+// 正規化（12能力 + 3大分類 2段階）
+// ---------------------------
+function normalizeScoresWithMNO(scoresObj) {
+  const scores = scoresObj.scores;
+  const { M, N, O } = scoresObj;
+
+  const maxScores12 = 5 + 3; // A～Lは5点 + MNO最大3点
+  const maxScores3Base = { action: 15, thinking: 15, teamwork: 30 }; // 3大分類
+  const maxMNO = 3;
+
+  // -------------------
+  // 12能力 → 5点スケール
+  // -------------------
+  let normalized12 = {};
+  for (let key of ["A","B","C","D","E","F","G","H","I","J","K","L"]) {
+    // MNOを見た目上反映
+    let addedValue = scores[key];
+    if (["A","B","C"].includes(key)) addedValue += M;
+    if (["D","E","F"].includes(key)) addedValue += N;
+    if (["G","H","I","J","K","L"].includes(key)) addedValue += O;
+
+    const value = (addedValue / maxScores12) * 5;
+    normalized12[key] = parseFloat(value.toFixed(1)); // 小数第1位
+  }
+
+  // -------------------
+  // 3大分類 ①MNOなしで10点スケール
+  // -------------------
+  let normalized3Step1 = {};
+  normalized3Step1.action = parseFloat((((scores.action - M) / maxScores3Base.action) * 10).toFixed(1));
+  normalized3Step1.thinking = parseFloat((((scores.thinking - N) / maxScores3Base.thinking) * 10).toFixed(1));
+  normalized3Step1.teamwork = parseFloat((((scores.teamwork - O) / maxScores3Base.teamwork) * 10).toFixed(1));
+
+  // -------------------
+  // 3大分類 ②MNO加算後に再スケーリング
+  // -------------------
+  let final3 = {};
+  final3.action = parseFloat((((normalized3Step1.action + M) / (10 + maxMNO)) * 10).toFixed(1));
+  final3.thinking = parseFloat((((normalized3Step1.thinking + N) / (10 + maxMNO)) * 10).toFixed(1));
+  final3.teamwork = parseFloat((((normalized3Step1.teamwork + O) / (10 + maxMNO)) * 10).toFixed(1));
+
+  return { normalized12, final3 };
+}
+
+// ---------------------------
+// 結果表示
+// ---------------------------
+function showResult() {
+  
+  container.innerHTML = "";
+  showMessage('<div style="text-align: center; font-size:16px; font-weight: bold;">《社会人基礎力チェックの結果》<br><br></div>');
+
+
+  // 集計 → 正規化
+  const scoresObj = calculateScoresWithMNO(answers);
+  const { normalized12, final3 } = normalizeScoresWithMNO(scoresObj);
+
+  // ===========================
+  // 3大分類：横棒グラフ
+  // ===========================
+  const barCanvas = document.createElement('canvas');
+  barCanvas.id = 'barChart';
+
+  // ★ここで高さを指定（pxでも%でもOK）
+  barCanvas.style.height = '300px'; // 例: 300pxに拡大
+
+  container.appendChild(barCanvas);
+
+  new Chart(barCanvas, {
+    type: 'bar',
+    data: {
+      labels: ["前に踏み出す力","考え抜く力","チームで働く力"],
+      datasets: [{
+        label: '3大分類スコア',
+        data: [final3.action, final3.thinking, final3.teamwork],
+        backgroundColor: [
+          'rgba(250, 50, 50, 0.4)',
+          'rgba(0, 50, 250, 0.4)',
+          'rgba(50, 250, 50, 0.4)'
+        ],
+        borderColor: [
+          'rgba(250, 50, 50, 1)',
+          'rgba(0, 50, 250, 1)',
+          'rgba(50, 250, 50, 1)'
+        ],
+        borderWidth: 0.5,
+        barPercentage: 0.7 // 棒自体の幅割合（0~1）
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      scales: {
+        x: { beginAtZero: true, max: 10, ticks: { stepSize: 2 } }
+      },
+      plugins: {
+/*        
+        title: {
+              display: true,
+              text: '《社会人基礎力チェックの結果》',
+              font: { size: 18, weight: 'bold' },
+              color: '#000',
+              padding: { top: 10, bottom: 30 }
+            },
+*/
+        legend: { display: false } // 凡例を非表示
+      }
+    }
+  });
+
+  // ===========================
+  // 12能力：レーダーチャート
+  // ===========================
+  const radarCanvas = document.createElement('canvas');
+  radarCanvas.id = 'radarChart';
+  container.appendChild(radarCanvas);
+
+  new Chart(radarCanvas, {
+    type: 'radar',
+    data: {
+      labels: [
+        "主体性","働きかけ力","実行力",
+        "課題発見力","計画力","創造力",
+        "発信力","傾聴力","柔軟性",
+        "状況把握力","規律性","ｽﾄﾚｽｺﾝﾄﾛｰﾙ力"
+      ],
+      datasets: [{
+        label: '12能力スコア',
+        data: [
+          normalized12.A, normalized12.B, normalized12.C,
+          normalized12.D, normalized12.E, normalized12.F,
+          normalized12.G, normalized12.H, normalized12.I,
+          normalized12.J, normalized12.K, normalized12.L
+        ],
+        backgroundColor: 'rgba(240, 200, 0, 0.4)',
+        borderColor: 'rgba(255, 160, 0, 1)',
+        borderWidth: 0.5,
+        pointBackgroundColor: 'rgba(255, 100, 0, 1)',
+        pointRadius: 2 // ポイントの大きさ
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        r: {
+          min: 0,
+          max: 5,
+          ticks: { stepSize: 1 }
+        }
+      },
+      plugins: { legend: { display: false } } // 凡例を非表示
+    }
+  });
+
+
+
+function createShareLink(action, thinking, teamwork) {
+  const text = encodeURIComponent(
+    `社会人基礎力診断の結果：\n前に踏み出す力：${action}\n考え抜く力：${thinking}\nチームで働く力：${teamwork}\n#社会人基礎力診断`
+  );
+  return `https://twitter.com/intent/tweet?text=${text}`;
+}
+
+/*
+function createShareLink(action, thinking, teamwork) {
+  const text = encodeURIComponent(
+    `社会人基礎力診断の結果：\n前に踏み出す力：${action}\n考え抜く力：${thinking}\nチームで働く力：${teamwork}\n診断はこちら↓`
+  );
+  const url = encodeURIComponent("https://yourdomain.com/shakaijin-diagnosis"); // 実際の診断URL
+  return `https://twitter.com/intent/tweet?text=${text}&url=${url}`;
+}
+*/
+
+
+        const buttonsContainer = document.getElementById("result-buttons"); //HTML側に要素を用意しておく
+        
+        // 共通ボタン作成関数
+        const createButton = (tag, contentHtml, className, onClickOrHref) => {
+        // tag: "a" ならリンク、"button" ならボタン（または "button" 以外はボタン扱い）
+        const isLink = tag === "a";
+        const el = document.createElement(isLink ? "a" : "button");
+
+        // クラスは先に付与しておく
+        el.className = `action-btn ${className || ""}`;
+
+        if (isLink) {
+          // onClickOrHref は href の文字列として扱う
+          el.href = onClickOrHref || "#";
+          el.target = "_blank";
+          el.rel = "noopener noreferrer";
+          // contentHtml を HTML として挿入（<br>を反映させたい場合に必要）
+          el.innerHTML = contentHtml;
+        } else {
+          // ボタンの場合、onClickOrHref は関数
+          el.type = "button";
+          el.innerHTML = contentHtml;
+          if (typeof onClickOrHref === "function") {
+            el.addEventListener("click", onClickOrHref);
+          }
+        }
+
+          return el;
+        };
+
+
+        // ① Xシェアボタン
+        const shareBtn = createButton(
+          "a",
+          "Xでシェアする",
+          "share-btn",
+          createShareLink(final3.action, final3.thinking, final3.teamwork)
+        );
+
+        // ② 再診断ボタン
+        const retryBtn = createButton(
+          "button",
+          "もう一度診断する",
+          "ghost",
+          () => location.reload()
+        );
+
+        // ③ noteプロフィールボタン
+        const noteBtn = createButton(
+          "a",
+          "この診断アプリを作った人は<br>こちら（noteプロフィールへ）",
+          "note-btn",
+          "https://note.com/alc_chron2025"
+        );
+
+        // 配置（上から順番に追加）
+        buttonsContainer.appendChild(shareBtn);
+        buttonsContainer.appendChild(retryBtn);
+        buttonsContainer.appendChild(noteBtn);
+      
+
+
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
+// 初期表示
+showMessage("こんにちは！これから社会人基礎力チェックを始めます。");
+showQuestion();
+
+</script>
+</body>
+</html>
