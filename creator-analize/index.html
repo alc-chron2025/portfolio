@@ -1,1 +1,238 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>自己PRツール</title>
+<style>
 
+  body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background: #f4f4f4;
+  max-width: 600px;
+  margin: auto;
+}
+
+h1 {
+  text-align: center;
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+}
+h2{
+  text-align: left;
+}
+
+.section {
+  background: #fff;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
+}
+
+input[type="number"],
+input[type="range"],
+input[type="text"] {
+  width: 35%;
+  padding: 5px;
+  margin-top: 5px;
+  box-sizing: border-box;
+}
+
+input[type="range"],
+input[type="text"] {
+  width: 75%;
+}
+
+.output {
+  background: #e9ecef;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 5px;
+  font-size: clamp(0.9rem, 2.5vw, 1rem);
+}
+
+.btn {
+  display: block;
+  margin: 15px auto;
+  padding: 10px 20px;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: clamp(1rem, 3vw, 1.2rem);
+}
+
+.btn:hover {
+  background: #0056b3;
+}
+
+</style>
+</head>
+<body>
+
+<h1>自己PR作成ツール</h1>
+<span style="font-size: 1.6rem; font-weight: bold; display: block; text-align: center;"><sup>― 立体感のある自己PRを作成する ―</sup></span>
+
+<div class="section">
+  <h2>3つの強み</h2>
+  <p>
+    <span style="font-weight: bold;">《 強みを見つけるコツ 》</span><br>
+    平均より上回っていると思えるもので十分です。<br>
+    例えば、10人中で1番になれそうな強みをかけ合わせれば、<br>
+    10×10×10となり、1000人に1人という希少性を見出せます。<br>
+    これが選ばれるための“差別化”や“ブランディング”になります。
+  </p>
+  <label>強み①<small>（テキスト入力）</small><br><input type="text" id="strong_1"></label>
+  <label>強み②<small>（テキスト入力）</small><br><input type="text" id="strong_2"></label>
+  <label>強み③<small>（テキスト入力）</small><br><input type="text" id="strong_3"></label>
+  <p>
+    ※3つの強みについては、保有スキルを3つ揃えるのが一番単純ですが、<br>
+    以下のの組合せで強みを考えてみるのもおススメです。<br>
+    「心」➡人間性や人柄など<br>
+    「技」➡スキルや知識など<br>
+    「体」➡体験したこと、実践したことなど<br>
+  </p>
+  <br>
+  
+
+  <h2>自己PRの用途</h2>
+  <label><input type="radio" name="uses" checked> 一般的な自己PR</label>
+  <label><input type="radio" name="uses"> SNS等のプロフィール用の自己PR</label>
+  <label><input type="radio" name="uses"> フリーランス用の自己PR</label>
+  <label><input type="radio" name="uses"> 専門家用の自己PR</label>
+  <label><input type="radio" name="uses"> 求職用自己PR</label>
+  <br>
+
+  <h2>希望するPR文の長さ</h2>
+  <label><input type="radio" name="length" checked>ワンフレーズ</label>
+  <label><input type="radio" name="length"> 30文字程度</label>
+  <label><input type="radio" name="length"> 100文字程度</label>
+  <label><input type="radio" name="length"> 200文字程度</label>
+  <label><input type="radio" name="length"> 300文字程度</label>
+  <br>
+
+  <h2>PR文の方向性</h2>
+  <label><input type="radio" name="direction" checked>ビジネス寄り</label>
+  <label><input type="radio" name="direction"> 感性寄り</label>
+  <label><input type="radio" name="direction"> 共感重視</label>
+  <label><input type="radio" name="direction"> 遊び心重視</label>
+  <label><input type="radio" name="direction"> 情熱重視</label>
+  <label><input type="radio" name="direction"> 温かみ重視</label>
+  <label><input type="radio" name="direction"> 信頼感重視</label>
+  <br>
+
+</div>
+
+<button class="btn" onclick="calculateScore()">プロンプト生成</button>
+
+<div class="section output" id="absoluteResults">
+  <h2 style="text-align: center;">自己PRをAIに手伝ってもらうためのプロンプト</h2>
+  <p>🔵3つの強み</p>
+  <ul>
+    <li>A: <span id="storong_A">-</span></li>
+    <li>B: <span id="storong_B">-</span></li>
+    <li>C: <span id="storong_C">-</span></li>
+  </ul>
+
+  <p>
+    🔵自己PRの用途：<span id="uses"></span><br>
+  </p>
+  <p>
+    🔵希望するPR文の長さ：<span id="length"></span><br>
+  </p>
+  <p>
+    🔵PR文の方向性：<span id="direction"></span><br>
+  </p>
+  <br>
+
+     <p></p>
+これは、強みを立体的に把握するためフレームワークです。<br>
+
+ 
+まず各要素の意味を伝えるの認識してください。 <br>
+A、B、Cは強み、すなわち競争源泉です。<br>
+D、E、Fは強み（競争源泉）により生み出せる提供可能な価値です。 <br>
+GはA～Fのすべてをまとめたものです。<br>
+
+さらに、以下の関係性が成立するものとします。<br>
+D＝A×B、<br>
+E＝B×C、<br>
+F＝C×A、<br>
+G＝A×B×C＝ D×E×F<br>
+
+ A、B、Cに入る強みが上記の3つであるとき、このフレームワークを<br>
+ 完成させて、Gに入るまとめの一言の候補を考えてください。
+    
+  </p>
+</div>
+  <p>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;☝<br>
+    上記の文章をAIのプロンプトにコピペしてみてください。<br>
+    きっと、AIからの有用なアドバイスが受けられることでしょう。
+  </p>
+  <!-- コピーボタン -->
+<button class="btn" id="copyButton">分析結果をコピー</button>
+</div>
+
+<script>
+function calculateScore() {
+  // 入力された強みを取得
+  const strong1 = document.getElementById("strong_1").value.trim() || "（未入力）";
+  const strong2 = document.getElementById("strong_2").value.trim() || "（未入力）";
+  const strong3 = document.getElementById("strong_3").value.trim() || "（未入力）";
+
+  // ラジオボタン（PRの用途）を取得
+  const uses = document.querySelector('input[name="uses"]:checked').parentElement.textContent.trim();
+
+  // ラジオボタン（PR文の長さ）を取得
+  const length = document.querySelector('input[name="length"]:checked').parentElement.textContent.trim();
+
+  // ラジオボタン（PRの方向性）を取得
+  const direction = document.querySelector('input[name="direction"]:checked').parentElement.textContent.trim();
+
+  // 表示欄に反映
+  document.getElementById("storong_A").textContent = strong1;
+  document.getElementById("storong_B").textContent = strong2;
+  document.getElementById("storong_C").textContent = strong3;
+  document.getElementById("uses").textContent = uses;
+  document.getElementById("length").textContent = length;
+  document.getElementById("direction").textContent = direction;
+}
+
+// コピー機能
+document.getElementById("copyButton").addEventListener("click", function() {
+  const resultArea = document.getElementById("absoluteResults");
+  const range = document.createRange();
+  range.selectNode(resultArea);
+  window.getSelection().removeAllRanges();
+  window.getSelection().addRange(range);
+
+  try {
+    document.execCommand("copy");
+    alert("分析結果をコピーしました！");
+  } catch (err) {
+    alert("コピーに失敗しました。");
+  }
+
+  window.getSelection().removeAllRanges();
+});
+
+// Enterキーで更新（UX改善）
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Enter") {
+    calculateScore();
+  }
+});
+</script>
+
+
+</body>
+</html>
