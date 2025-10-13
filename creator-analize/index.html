@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>自己PRツール</title>
+<title>クリエイターの活動分析（初心者向け）</title>
 <style>
 
   body {
@@ -19,7 +19,7 @@ h1 {
   font-size: clamp(1.5rem, 5vw, 2.5rem);
 }
 h2{
-  text-align: left;
+  text-align: center;
 }
 
 .section {
@@ -78,104 +78,88 @@ input[type="text"] {
 </head>
 <body>
 
-<h1>自己PR作成ツール</h1>
-<span style="font-size: 1.6rem; font-weight: bold; display: block; text-align: center;"><sup>― 立体感のある自己PRを作成する ―</sup></span>
+<h1>noteの活動分析アプリ</h1>
+<span style="font-size: 1.6rem; font-weight: bold; display: block; text-align: center;"><sup>― 初心者クリエイター向け ―</sup></span>
 
 <div class="section">
-  <h2>3つの強み</h2>
-  <p>
-    <span style="font-weight: bold;">《 強みを見つけるコツ 》</span><br>
-    平均より上回っていると思えるもので十分です。<br>
-    例えば、10人中で1番になれそうな強みをかけ合わせれば、<br>
-    10×10×10となり、1000人に1人という希少性を見出せます。<br>
-    これが選ばれるための“差別化”や“ブランディング”になります。
-  </p>
-  <label>強み①<small>（テキスト入力）</small><br><input type="text" id="strong_1"></label>
-  <label>強み②<small>（テキスト入力）</small><br><input type="text" id="strong_2"></label>
-  <label>強み③<small>（テキスト入力）</small><br><input type="text" id="strong_3"></label>
-  <p>
-    ※3つの強みについては、保有スキルを3つ揃えるのが一番単純ですが、<br>
-    以下のの組合せで強みを考えてみるのもおススメです。<br>
-    「心」➡人間性や人柄など<br>
-    「技」➡スキルや知識など<br>
-    「体」➡体験したこと、実践したことなど<br>
-  </p>
-  <br>
-  
+  <h2>入力①</h2>
+  <label>投稿ジャンル<small>（テキスト入力）</small><br><input type="text" id="postGenre"></label>
+  <label>投稿数<small>（半角数字）</small><br><input type="number" id="postCount" min="1" value=""></label>
+  <label>フォロワー数<small>（半角数字）</small><br><input type="number" id="followerCount" min="0" value=""></label>
+  <label>フォロー数<small>（半角数字）</small><br><input type="number" id="followingCount" min="1" value=""></label>
+  <label>全体ビュー数<small>（半角数字）</small><br><input type="number" id="totalViews" min="0" value=""></label>
+  <label>スキ数<small>（半角数字）</small><br><input type="number" id="likeCount" min="0" value=""></label>
+</div>
 
-  <h2>自己PRの用途</h2>
-  <label><input type="radio" name="uses" checked> 一般的な自己PR</label>
-  <label><input type="radio" name="uses"> SNS等のプロフィール用の自己PR</label>
-  <label><input type="radio" name="uses"> フリーランス用の自己PR</label>
-  <label><input type="radio" name="uses"> 専門家用の自己PR</label>
-  <label><input type="radio" name="uses"> 求職用自己PR</label>
+<div class="section">
+  <h2>入力②</h2>
+  <label>1.初投稿からの投稿継続期間</label>
+  <label><input type="radio" name="elapsed" value="under1" checked> 1か月未満</label>
+  <label><input type="radio" name="elapsed" value="under3"> 1〜3か月未満</label>
+  <label><input type="radio" name="elapsed" value="under6"> 3〜6か月未満</label>
+  <label><input type="radio" name="elapsed" value="under12"> 6〜12か月未満</label>
+  <label><input type="radio" name="elapsed" value="over12"> 1年以上</label>
   <br>
 
-  <h2>希望するPR文の長さ</h2>
-  <label><input type="radio" name="length" checked>ワンフレーズ</label>
-  <label><input type="radio" name="length"> 30文字程度</label>
-  <label><input type="radio" name="length"> 100文字程度</label>
-  <label><input type="radio" name="length"> 200文字程度</label>
-  <label><input type="radio" name="length"> 300文字程度</label>
+  <label>2.投稿ジャンルによる読者数<br>
+    <input type="range" id="genreSlider" min="0" max="100" value="50">
+    <br>
+    <span id="genreLabel">普通</span>
+  </label>
+  <br>
   <br>
 
-  <h2>PR文の方向性</h2>
-  <label><input type="radio" name="direction" checked>ビジネス寄り</label>
-  <label><input type="radio" name="direction"> 感性寄り</label>
-  <label><input type="radio" name="direction"> 共感重視</label>
-  <label><input type="radio" name="direction"> 遊び心重視</label>
-  <label><input type="radio" name="direction"> 情熱重視</label>
-  <label><input type="radio" name="direction"> 温かみ重視</label>
-  <label><input type="radio" name="direction"> 信頼感重視</label>
+  <label>3.投稿ペース（1ヶ月あたり）<br>
+    <input type="range" id="paceSlider" min="1" max="30" value="0">
+    <span id="paceValue">1</span><span>件/月</span>
+  </label>
   <br>
+
+  <label for="followBackSlider">4.フォロー/フォローバックの使用頻度</label>
+  <input type="range" id="followBackSlider" min="0" max="100" value="50">
+  <span id="followBackValue">ふつう</span>
+
 
 </div>
 
-<button class="btn" onclick="calculateScore()">プロンプト生成</button>
+<button class="btn" onclick="calculateScore()">活動を分析する</button>
 
 <div class="section output" id="absoluteResults">
-  <h2 style="text-align: center;">自己PRをAIに手伝ってもらうためのプロンプト</h2>
-  <p>🔵3つの強み</p>
+  <h2>主要指標と「SABCD」5段階ランク評価</h2>
   <ul>
-    <li>A: <span id="storong_A">-</span></li>
-    <li>B: <span id="storong_B">-</span></li>
-    <li>C: <span id="storong_C">-</span></li>
+    <li>平均ビュー数: <span id="avgViews">-</span></li>
+    <li>フォロワー率: <span id="followerRate">-</span></li>
+    <li>実効フォロワー率: <span id="EffectivefollowerRate">-</span></li>
+    <li>スキ率: <span id="likeRate">-</span></li>
+    <li>1投稿あたりのフォロワー増加数: <span id="followerPerPost">-</span></li>
+    <li>1投稿あたりのスキ数: <span id="likePerPost">-</span></li>
+    <li>閲覧フォロワーアクティブ度: <span id="followerActive1">-</span></li>
+    <li>実効閲覧フォロワーアクティブ度: <span id="EffectivefollowerActive1">-</span></li>
+    <li>スキフォロワーアクティブ度: <span id="followerActive2">-</span></li>
+    <li>実効スキフォロワーアクティブ度: <span id="EffectivefollowerActive2">-</span></li>
   </ul>
 
   <p>
-    🔵自己PRの用途：<span id="uses"></span><br>
+    ＜補足事項＞<br>
+    投稿ジャンル：<span id="postGenre2"></span><br>
+    投稿記事数：<span id="posts"></span><br>
+    初投稿からの投稿継続期間：<span id="hosoku1"></span><br>
+    投稿ジャンルによる読者数：<span id="hosoku2"></span><br>
+    投稿ペース（1ヶ月あたり）：<span id="hosoku3"></span><br>
+    フォロー/フォローバック使用頻度：<span id="hosoku4"></span>
+
   </p>
+
   <p>
-    🔵希望するPR文の長さ：<span id="length"></span><br>
-  </p>
-  <p>
-    🔵PR文の方向性：<span id="direction"></span><br>
-  </p>
-  <br>
-
-     <p></p>
-これは、強みを立体的に把握するためフレームワークです。<br>
-
- 
-まず各要素の意味を伝えるの認識してください。 <br>
-A、B、Cは強み、すなわち競争源泉です。<br>
-D、E、Fは強み（競争源泉）により生み出せる提供可能な価値です。 <br>
-GはA～Fのすべてをまとめたものです。<br>
-
-さらに、以下の関係性が成立するものとします。<br>
-D＝A×B、<br>
-E＝B×C、<br>
-F＝C×A、<br>
-G＝A×B×C＝ D×E×F<br>
-
- A、B、Cに入る強みが上記の3つであるとき、このフレームワークを<br>
- 完成させて、Gに入るまとめの一言の候補を考えてください。
-    
+    これはnoteクリエイターとしての活動を分析したものです。<br>
+    これらの指標から総合的な評価をしてください。<br>
+    また、改善のためのアクションプランを教えてください。<br>
+    ※なお、ランク評価には補足事項による補正をかけています。
   </p>
 </div>
   <p>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;☝<br>
-    上記の文章をAIのプロンプトにコピペしてみてください。<br>
+    分析結果と上記の文章をAIのプロンプトにコピペしてみてください。<br>
     きっと、AIからの有用なアドバイスが受けられることでしょう。
   </p>
   <!-- コピーボタン -->
@@ -183,56 +167,232 @@ G＝A×B×C＝ D×E×F<br>
 </div>
 
 <script>
-function calculateScore() {
-  // 入力された強みを取得
-  const strong1 = document.getElementById("strong_1").value.trim() || "（未入力）";
-  const strong2 = document.getElementById("strong_2").value.trim() || "（未入力）";
-  const strong3 = document.getElementById("strong_3").value.trim() || "（未入力）";
+const genreSlider = document.getElementById("genreSlider");
+const genreLabel = document.getElementById("genreLabel");
+genreSlider.addEventListener("input", () => {
+  const val = parseInt(genreSlider.value);
+  if (val < 20) genreLabel.textContent = "少ない（ニッチなジャンル）";
+  else if (val < 40) genreLabel.textContent = "やや少なめ";
+  else if (val < 60) genreLabel.textContent = "普通";
+  else if (val < 80) genreLabel.textContent = "やや多め";
+  else genreLabel.textContent = "多い（人気ジャンル）";
+});
 
-  // ラジオボタン（PRの用途）を取得
-  const uses = document.querySelector('input[name="uses"]:checked').parentElement.textContent.trim();
+const paceSlider = document.getElementById("paceSlider");
+const paceValue = document.getElementById("paceValue");
+paceSlider.addEventListener("input", () => {
+  paceValue.textContent = paceSlider.value;
+});
 
-  // ラジオボタン（PR文の長さ）を取得
-  const length = document.querySelector('input[name="length"]:checked').parentElement.textContent.trim();
 
-  // ラジオボタン（PRの方向性）を取得
-  const direction = document.querySelector('input[name="direction"]:checked').parentElement.textContent.trim();
 
-  // 表示欄に反映
-  document.getElementById("storong_A").textContent = strong1;
-  document.getElementById("storong_B").textContent = strong2;
-  document.getElementById("storong_C").textContent = strong3;
-  document.getElementById("uses").textContent = uses;
-  document.getElementById("length").textContent = length;
-  document.getElementById("direction").textContent = direction;
+
+
+const slider = document.getElementById('followBackSlider');
+const label = document.getElementById('followBackValue');
+
+const follba = parseInt(document.getElementById("followBackSlider").value);
+
+
+slider.addEventListener('input', () => {
+  const val = slider.value;
+  if(val < 20){
+    label.textContent = "ほぼ使わない";
+  } else if(val < 40){
+    label.textContent = "あまり使わない";
+  } else if(val < 60){
+    label.textContent = "ふつう";
+  } else if(val < 80){
+    label.textContent = "やや多用する";
+  } else{
+    label.textContent = "多用しすぎ";
+  }
+});
+
+
+
+
+
+function getPaceFactor(pace) {
+  if (pace <= 2) return 0.8;
+  if (pace <= 5) return 1.0;
+  if (pace <= 15) return 1.2;
+  if (pace <= 25) return 1.0;
+  return 0.9;
 }
 
-// コピー機能
+function getGenreFactor(val) {
+  if (val < 20) return 1.2;
+  if (val < 40) return 1.1;
+  if (val < 60) return 1.0;
+  if (val < 80) return 0.9;
+  return 0.8;
+}
+
+
+function getFollowAndback(follba) {
+  if (follba < 20) return -0.3;
+  if (follba < 40) return -0.15;
+  if (follba < 60) return 0.15;
+  if (follba < 80) return 0.3;
+  return 0;
+}
+
+
+
+
+function calculateScore() {
+  const postGenre = document.getElementById("postGenre").value;
+  const posts = parseInt(document.getElementById("postCount").value);
+  const followers = parseInt(document.getElementById("followerCount").value);
+  const following = parseInt(document.getElementById("followingCount").value);
+  const totalViews = parseInt(document.getElementById("totalViews").value);
+  const likes = parseInt(document.getElementById("likeCount").value);
+
+  const elapsed = document.querySelector('input[name="elapsed"]:checked').value;
+  const pace = parseInt(paceSlider.value);
+  const genre = parseInt(genreSlider.value);
+
+  let elapsedFactor = 1.0;
+  if (elapsed === "under1") elapsedFactor = 1.2;
+  else if (elapsed === "under3") elapsedFactor = 1.1;
+  else if (elapsed === "under6") elapsedFactor = 1.0;
+  else if (elapsed === "under12") elapsedFactor = 0.9;
+  else if (elapsed === "over12") elapsedFactor = 0.8;
+
+  const paceFactor = getPaceFactor(pace);
+  const genreFactor = getGenreFactor(genre);
+  const correction = elapsedFactor * paceFactor * genreFactor;
+
+  const follbaFactor = getFollowAndback(follba);
+  const avgViews = (totalViews / posts).toFixed(1);
+  const followerRate = ((followers / following) * 100).toFixed(1); 
+  const likeRate = ((likes / totalViews) * 100).toFixed(1);
+  const followerPerPost = (followers / posts).toFixed(1);
+  const likePerPost = (likes / posts).toFixed(1);
+  const followerActive1 = ((totalViews / (followers * posts)) * 100).toFixed(2);
+  const followerActive2 = ((likes / (followers * posts)) * 100).toFixed(2);
+  
+
+  const correctedAvgViews = (avgViews * correction).toFixed(1);
+  const correctedfollowerRate = (followerRate * correction).toFixed(1);
+  const correctedlikeRate = (likeRate * correction).toFixed(1);
+  const correctedfollowerPerPost = (followerPerPost * correction).toFixed(1);
+  const correctedlikePerPost = (likePerPost * correction).toFixed(1);
+  const correctedfollowerActive1 = (followerActive1 * correction).toFixed(1);
+  const correctedfollowerActive2 = (followerActive2 * correction).toFixed(1);
+
+  const EffevtivefollowerRate = (followerRate * (1 - follbaFactor)).toFixed(1);
+  const EffctivefollowerActive1 = (followerActive1 * (1 + follbaFactor)).toFixed(1);
+  const EffctivefollowerActive2 = (followerActive2 * (1 + follbaFactor)).toFixed(1);
+
+
+  function rankAvgViews(v) {
+    v = parseFloat(v);
+    if (v >= 500) return " (S評価)";
+    if (v >= 300) return " (A評価)";
+    if (v >= 150) return " (B評価)";
+    if (v >= 80) return " (C評価)";
+    return " (D評価)";
+  }
+
+  function rankFollowerRate(v) {
+    v = parseFloat(v);
+    if (v >= 100) return " (S評価)";
+    if (v >= 80) return " (A評価)";
+    if (v >= 50) return " (B評価)";
+    if (v >= 20) return " (C評価)";
+    return " (D評価)";
+  }
+
+  function ranklikeRate(v) {
+    v = parseFloat(v);
+    if (v >= 50) return " (S評価)";
+    if (v >= 20) return " (A評価)";
+    if (v >= 10) return " (B評価)";
+    if (v >= 5) return " (C評価)";
+    return " (D評価)";
+  }
+
+  function rankFollowerPerPost(v) {
+    v = parseFloat(v);
+    if (v >= 29) return " (S評価)";
+    if (v >= 9) return " (A評価)";
+    if (v >= 4) return " (B評価)";
+    if (v >= 1) return " (C評価)";
+    return " (D評価)";
+  }
+
+  function rankLikePerPost(v) {
+    v = parseFloat(v);
+    if (v >= 80) return " (S評価)";
+    if (v >= 40) return " (A評価)";
+    if (v >= 20) return " (B評価)";
+    if (v >= 10) return " (C評価)";
+    return " (D評価)";
+  }
+
+  function rankfollowerActive1(v) {
+    v = parseFloat(v);
+    if (v >= 60) return " (S評価)";
+    if (v >= 45) return " (A評価)";
+    if (v >= 30) return " (B評価)";
+    if (v >= 20) return " (C評価)";
+    return " (D評価)";
+  }
+
+  function rankfollowerActive2(v) {
+    v = parseFloat(v);
+    if (v >= 30) return " (S評価)";
+    if (v >= 20) return " (A評価)";
+    if (v >= 10) return " (B評価)";
+    if (v >= 5) return " (C評価)";
+    return " (D評価)";
+  }
+
+  document.getElementById("avgViews").textContent = avgViews + rankAvgViews(correctedAvgViews);
+  document.getElementById("followerRate").textContent = followerRate + "%" + rankFollowerRate(correctedfollowerRate);
+  document.getElementById("EffectivefollowerRate").textContent = EffevtivefollowerRate + "%" + rankFollowerRate(EffevtivefollowerRate);
+  document.getElementById("likeRate").textContent = likeRate + "%" + ranklikeRate(correctedlikeRate);
+  document.getElementById("followerPerPost").textContent = followerPerPost + rankFollowerPerPost(correctedfollowerPerPost);
+  document.getElementById("likePerPost").textContent = likePerPost + rankLikePerPost(correctedlikePerPost);
+  document.getElementById("followerActive1").textContent = followerActive1 + "%" + rankfollowerActive1(correctedfollowerActive1);
+  document.getElementById("EffectivefollowerActive1").textContent = EffctivefollowerActive1 + "%" + rankfollowerActive1(EffctivefollowerActive1);
+  document.getElementById("followerActive2").textContent = followerActive2 + "%" + rankfollowerActive2(correctedfollowerActive2);
+  document.getElementById("EffectivefollowerActive2").textContent = EffctivefollowerActive2 + "%" + rankfollowerActive2(EffctivefollowerActive2);
+
+  document.getElementById("postGenre2").textContent = postGenre;
+  document.getElementById("posts").textContent = posts;
+  document.getElementById("hosoku1").textContent = 
+  (elapsed === "under1" ? "1か月未満" :
+   elapsed === "under3" ? "1〜3か月未満" :
+   elapsed === "under6" ? "3〜6か月未満" :
+   elapsed === "under12" ? "6〜12か月未満" :
+   "1年以上");
+
+  document.getElementById("hosoku2").textContent = genreLabel.textContent;
+  document.getElementById("hosoku3").textContent = pace + "件/月";
+  document.getElementById("hosoku4").textContent = label.textContent;
+
+}
 document.getElementById("copyButton").addEventListener("click", function() {
-  const resultArea = document.getElementById("absoluteResults");
+  // コピー対象：分析結果＋補足部分
+  const resultSection = document.getElementById("absoluteResults");
   const range = document.createRange();
-  range.selectNode(resultArea);
-  window.getSelection().removeAllRanges();
-  window.getSelection().addRange(range);
+  range.selectNode(resultSection);
+
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
 
   try {
     document.execCommand("copy");
+    selection.removeAllRanges();
     alert("分析結果をコピーしました！");
   } catch (err) {
-    alert("コピーに失敗しました。");
-  }
-
-  window.getSelection().removeAllRanges();
-});
-
-// Enterキーで更新（UX改善）
-document.addEventListener("keydown", function(e) {
-  if (e.key === "Enter") {
-    calculateScore();
+    alert("コピーに失敗しました。手動で選択してコピーしてください。");
   }
 });
 </script>
-
-
 </body>
 </html>
