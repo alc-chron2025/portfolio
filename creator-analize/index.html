@@ -88,6 +88,7 @@ input[type="text"] {
   <label>フォロワー数<small>（半角数字）</small><br><input type="number" id="followerCount" min="0" value=""></label>
   <label>フォロー数<small>（半角数字）</small><br><input type="number" id="followingCount" min="1" value=""></label>
   <label>全体ビュー数<small>（半角数字）</small><br><input type="number" id="totalViews" min="0" value=""></label>
+  <label>コメント数<small>（半角数字）</small><br><input type="number" id="commentCount" min="0" value=""></label>
   <label>スキ数<small>（半角数字）</small><br><input type="number" id="likeCount" min="0" value=""></label>
 </div>
 
@@ -141,12 +142,13 @@ input[type="text"] {
 
   <p>
     ＜補足事項＞<br>
-    投稿ジャンル：<span id="postGenre2"></span><br>
-    投稿記事数：<span id="posts"></span><br>
-    初投稿からの投稿継続期間：<span id="hosoku1"></span><br>
-    投稿ジャンルによる読者数：<span id="hosoku2"></span><br>
-    投稿ペース（1ヶ月あたり）：<span id="hosoku3"></span><br>
-    フォロー/フォローバック使用頻度：<span id="hosoku4"></span>
+    投稿ジャンル:<span id="postGenre2"></span><br>
+    投稿記事数:<span id="posts"></span><br>
+    コメント数: <span id="comments"></span><br>
+    初投稿からの投稿継続期間:<span id="hosoku1"></span><br>
+    投稿ジャンルによる読者数:<span id="hosoku2"></span><br>
+    投稿ペース（1ヶ月あたり）:<span id="hosoku3"></span><br>
+    フォロー/フォローバック使用頻度:<span id="hosoku4"></span>
 
   </p>
 
@@ -247,6 +249,7 @@ function calculateScore() {
   const followers = parseInt(document.getElementById("followerCount").value);
   const following = parseInt(document.getElementById("followingCount").value);
   const totalViews = parseInt(document.getElementById("totalViews").value);
+  const comments = parseInt(document.getElementById("commentCount").value);
   const likes = parseInt(document.getElementById("likeCount").value);
 
   const elapsed = document.querySelector('input[name="elapsed"]:checked').value;
@@ -363,6 +366,7 @@ function calculateScore() {
 
   document.getElementById("postGenre2").textContent = postGenre;
   document.getElementById("posts").textContent = posts;
+  document.getElementById("comments").textContent = comments;
   document.getElementById("hosoku1").textContent = 
   (elapsed === "under1" ? "1か月未満" :
    elapsed === "under3" ? "1〜3か月未満" :
