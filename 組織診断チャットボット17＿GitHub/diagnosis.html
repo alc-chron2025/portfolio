@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>チャットボット診断ツール</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 10px;
+      margin: 0;
+    }
+
+    #startScreen {
+      text-align: center;
+      padding: 30px;
+      max-width: 500px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    #diagnoseBtn {
+      background-color: #007bff;
+      color: #fff;
+      padding: 10px 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #chat {
+      background: #fff;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .msg {
+      margin-bottom: 15px;
+      line-height: 1.6;
+      font-size: 16px;
+    }
+
+    .bot { color: #333; }
+    .user { color: #007bff; text-align: right; }
+
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      margin: 5px 0;
+      font-size: 16px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+button:hover {
+ opacity: 0.7;
+}
+
+    button.ghost {
+      background: #ccc;
+      color: #333;
+    }
+
+#terms-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+
+    /* 語句選択ボタン */
+    .word-button {
+      background-color: #e0e0e0;
+      color: #333;
+      border: 1px solid #ccc;
+      padding: 10px 15px;
+      margin: 5px 0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      font-size: 16px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .word-button:hover {
+      background-color: #d5d5d5;
+    }
+
+    /* 選択中 */
+    .word-button.selected {
+      background-color: #007bff; /* 緑系#28a745 */
+      color: #fff;
+    }
+
+    /* 結果ボタン（差別化） */
+    .result-button-container {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .result-button {
+      background-color: #007bff; /* 緑系#4CAF50 */
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 18px;
+      transition: background-color 0.2s;
+      width: 100%;
+    }
+
+    .result-button:hover {
+      background-color: #007bee; /* 緑系#45A049 */
+    }
+
+    .score {
+      font-weight: bold;
+      display: block;
+      margin-top: 8px;
+    }
+
+    #resultChart {
+      display: block;
+      margin: 20px auto;
+      background: transparent;
+      max-width: 100%;
+      height: auto;
+    }
+
+#result-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.action-btn {
+  display: block;
+  width: 340px;
+  max-width: 90%;
+  margin: 10px auto;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 16px;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background-color 0.3s;
+}
+
+/* Xシェアボタン */
+.share-btn {
+  background-color: #1DA1F2;
+  color: #fff;
+  font-weight: bold;
+}
+.share-btn:hover {
+  background-color: #0d8ddb;
+}
+
+.share-btn a {
+  display: inline-block;
+  background-color: #1da1f2;
+  border: 0.5px solid #6600ff;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* 再診断ボタン */
+.ghost {
+  background-color: #fff;
+  border: 0.5px solid #666;
+  color: #333;
+}
+.ghost:hover {
+  background-color: #f0f0f0;
+}
+
+/* noteプロフィールボタン */
+.note-btn {
+  background-color: #f5f5f5;
+  border: 0.5px solid #666;
+  color: #000;
+}
+.note-btn:hover {
+  background-color: #eaeaea;
+}
+
+
+    @media (min-width: 600px) {
+      body {
+        padding: 20px;
+      }
+    }
+  </style>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div id="startScreen">
+    <h2>学習と成長の組織診断</h2>
+    <p>あなたの所属する組織（チーム）の<br>
+      学習と成長についての組織診断です。<br><br>
+
+      心理的安全性と挑戦度合を点数化し<br>両者のバランスをマトリクスで<br>
+      表示することで組織（チーム）の<br>
+      状況を確認することができます。</p><br>
+    
+      <p>
+      所要時間 3分程度<br>
+      質問数 8問<br><br>
+      </p>          
+    
+    <button id="diagnoseBtn">診断してみる</button>
+
+  </div>
+
+
+<div id="chat-container" style="display: none;">
+  <div id="chat"></div>
+  <div id="result-section" style="text-align: center; margin-top: 20px;">
+  <canvas id="resultChart" width="360" height="360"></canvas>
+  <br>
+  <div id="result-buttons" style="margin-top: 20px;"></div>
+  </div>
+</div>
+
+
+<script>
+
+  const startScreen = document.getElementById('startScreen');
+  const chatContainer = document.getElementById('chat-container');
+  const diagnoseBtn = document.getElementById('diagnoseBtn');
+
+  diagnoseBtn.addEventListener('click', () => {
+    startScreen.style.display = 'none';
+    chatContainer.style.display = 'block';
+  });
+
+
+
+
+
+// ================================
+// 質問データ
+// ================================
+const QUESTIONS = [
+  { text: "あなたのチーム（組織）では、立場や役職に関係なく自由に意見を言える雰囲気がありマスカ？", attributes: { P: 1, C: 0 } },
+  { text: "あなたのチーム（組織）は現状に満足せずに、常に改善や成長を目指していマスカ？", attributes: { P: 0, C: 1 } },
+  { text: "チーム（組織）内で間違いや失敗をしても責められることなく受け入れられると感じられマスカ？", attributes: { P: 1, C: 0 } },
+  { text: "高い目標に向かう中で安心して意見や疑問を言える雰囲気がありマスカ？", attributes: { P: 1, C: 1 } },
+  { text: "チーム（組織）の目標は達成が容易ではなく、やや高め～高めに設定されていると感じマスカ？", attributes: { P: 0, C: 1 } },
+  { text: "失敗してもチーム（組織）はそれを学びの機会として受け止めていマスカ？", attributes: { P: 1, C: 1 } },
+  { text: "チーム（組織）では、困難な課題に対して互いに支援し合う文化がありマスカ？", attributes: { P: 1, C: 1 } }
+];
+
+// ================================
+// 補正用語句データ
+// ================================
+const TERMS = [
+  { key: "癒し", adjust: { P: -0.5, C: 0.0 } },
+  { key: "多様性", adjust: { P: -0.3, C: 0.0 } },
+  { key: "安定感", adjust: { P: 0, C: 0.2 } },
+  { key: "ゆとり", adjust: { P: -0.5, C: 0.0 } },
+  { key: "共感", adjust: { P: -0.8, C: 0.0 } },
+  { key: "創意工夫", adjust: { P: -0.3, C: -0.2 } },
+  { key: "自主性", adjust: { P: -0.2, C: -0.4 } },
+  { key: "協調性", adjust: { P: -0.2, C: 0 } },
+  { key: "向上心", adjust: { P: 0.0, C: -1.0 } },
+  { key: "情熱", adjust: { P: 0.0, C: -0.8 } },
+  { key: "スピード感", adjust: { P: 0.0, C: -0.2 } },
+  { key: "効率性", adjust: { P: 0.0, C: 0.0 } }
+];
+
+// ================================
+// 状態管理
+// ================================
+let currentQuestion = 0;
+let pScore = 0;
+let cScore = 0;
+let selectedTerms = [];
+
+// ================================
+// タイプライター演出付きメッセージ追加
+// ================================
+function addMsg(text, sender = "bot", element = null) {
+  const div = document.createElement("div");
+  div.className = `msg ${sender}`;
+
+  if (element) {
+    div.appendChild(element);
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+  } else {
+    chat.appendChild(div);
+    typeWriter(div, text);
+  }
+}
+
+function typeWriter(target, htmlText, speed = 20) {
+  let i = 0;
+  let isTag = false;
+  let tagBuffer = "";
+
+  function type() {
+    if (i < htmlText.length) {
+      const char = htmlText[i];
+      if (char === "<") {
+        isTag = true;
+        tagBuffer += char;
+      } else if (char === ">") {
+        tagBuffer += char;
+        target.innerHTML += tagBuffer;
+        tagBuffer = "";
+        isTag = false;
+      } else if (isTag) {
+        tagBuffer += char;
+      } else {
+        target.innerHTML += char;
+      }
+      i++;
+      chat.scrollTop = chat.scrollHeight;
+      setTimeout(type, speed);
+    }
+  }
+
+  type();
+}
+
+    // ===================================
+    // メッセージ追加（タイプライター演出なし）
+    // ===================================
+    function addMsg2(text, sender = "bot", element = null) {
+      const div = document.createElement("div");
+      div.className = `msg ${sender}`;
+      if (element) {
+        div.appendChild(element);
+      } else {
+        div.innerHTML = text;
+      }
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+
+// =================================
+// 質問スタートボタンを押したときの処理
+// =================================
+/*const startBtn = document.getElementById('startBtn');
+
+startBtn.addEventListener('click', () => {
+    
+const chat = document.getElementById("chat");
+
+
+
+  // ================================
+  // 最初のメッセージ
+  // ================================
+  addMsg("🤖：コんにチは！<br><br>今カラ、<strong>“学習と成長”</strong>についての 組織診断 ヲ始めマス。<br><br>コレからアナタが所属している組織（チーム）にツイテ<strong>7問</strong>の質問をしてイキマス。<br><br>選択肢の中カラ、アナタの考えに一番近い回答ヲ選んでクダサイ。", "bot");
+
+  setTimeout(() => {
+  addMsg("<br>回答所要時間の目安は<strong> 3分 </strong>程デス。<br><br>", "bot");
+  }, 4500);
+
+
+  setTimeout(() => {
+  const startBtn = document.createElement("button");
+  startBtn.textContent = "質問スタート";
+  startBtn.addEventListener("click", () => {
+    startBtn.remove();
+    showQuestion();
+  });
+  addMsg("", "bot", startBtn);
+  }, 6000);
+
+
+});
+*/
+
+
+diagnoseBtn.addEventListener('click', () => {
+  startScreen.style.display = 'none';
+  chatContainer.style.display = 'block';
+
+  const chat = document.getElementById("chat");
+
+  // 最初のメッセージ表示
+  addMsg("🤖：コんにチは！<br><br>今カラ、<strong>“学習と成長”</strong>についての 組織診断 ヲ始めマス。<br><br>コレからアナタが所属している組織（チーム）にツイテ<strong>7問</strong>の質問をしてイキマス。<br><br>選択肢の中カラ、アナタの考えに一番近い回答ヲ選んでクダサイ。", "bot");
+
+  setTimeout(() => {
+    addMsg("<br>回答所要時間の目安は<strong> 3分 </strong>程デス。<br><br>", "bot");
+  }, 4500);
+
+  setTimeout(() => {
+    const qStartBtn = document.createElement("button");
+    qStartBtn.textContent = "質問スタート";
+    qStartBtn.addEventListener("click", () => {
+      qStartBtn.remove();
+      showQuestion();
+    });
+    addMsg("", "bot", qStartBtn);
+  }, 6000);
+});
+
+
+
+
+
+// ================================
+// 質問表示
+// ================================
+function showQuestion() {
+  chat.innerHTML = "";
+  if (currentQuestion < QUESTIONS.length) {
+    const q = QUESTIONS[currentQuestion];
+    addMsg(`🤖：<strong>Q${currentQuestion + 1}.</strong> ${q.text}`, "bot");
+
+
+setTimeout(() => {
+    const options = document.createElement("div");
+    options.className = "options";
+
+    const choices = [
+      { text: "強くそう思う", value: 3 },
+      { text: "どちらかといえばそう思う", value: 2 },
+      { text: "どちらかといえばそう思わない", value: 1 },
+      { text: "全くそう思わない", value: 0 }
+    ];
+
+
+    choices.forEach(choice => {
+      const btn = document.createElement("button");
+      btn.textContent = choice.text;
+      btn.addEventListener("click", () => {
+        pScore += choice.value * q.attributes.P;
+        cScore += choice.value * q.attributes.C;
+        currentQuestion++;
+        showQuestion();
+      });
+      options.appendChild(btn);
+    });
+
+
+    addMsg("", "bot", options);
+}, 1700);
+  } else {
+    showTermsSelection();
+  }
+}
+
+
+// ================================
+// 語句選択画面
+// ================================
+function showTermsSelection() {
+  chat.innerHTML = "";
+  addMsg("🤖：最後にアナタが所属している組織（チーム）に“<strong>不足</strong>していると思うもの”ヲ選んでネ。（<strong>最大3つまで</strong>選択可、<strong>選ばなくてもOK</strong>）", "bot");
+
+  const termsContainer = document.createElement("div");
+  termsContainer.id = "terms-container";
+
+  TERMS.forEach(term => {
+    const btn = document.createElement("button");
+    btn.textContent = term.key;
+    btn.className = "word-button";
+
+    btn.addEventListener("click", () => {
+      if (!selectedTerms.includes(term)) {
+        if (selectedTerms.length >= 3) {
+          alert("選択できるのは最大3つまでです。");
+          return;
+        }
+        selectedTerms.push(term);
+        btn.classList.add("selected");
+      } else {
+        selectedTerms = selectedTerms.filter(t => t !== term);
+        btn.classList.remove("selected");
+      }
+    });
+
+    termsContainer.appendChild(btn);
+  });
+  addMsg("", "bot", termsContainer);
+
+  const resultContainer = document.createElement("div");
+  resultContainer.className = "result-button-container";
+
+setTimeout(() => {
+  const nextBtn = document.createElement("button");
+  nextBtn.textContent = "診断結果を見る";
+  nextBtn.className = "result-button";
+  nextBtn.addEventListener("click", () => {
+    showResult();
+  });
+  resultContainer.appendChild(nextBtn);
+
+  addMsg("", "bot", resultContainer);
+}, 2000);
+}
+
+// ================================
+// 補正適用
+// ================================
+function applyTermAdjustments(p, c, terms) {
+  let finalP = p;
+  let finalC = c;
+  const maxScore = 15;
+
+  terms.forEach(term => {
+    finalP += term.adjust.P;
+    finalC += term.adjust.C;
+  });
+
+  finalP = Math.max(finalP, 0);
+  finalC = Math.max(finalC, 0);
+
+  finalP = Math.round((finalP / maxScore) * 100);
+  finalC = Math.round((finalC / maxScore) * 100);
+
+  return { P: finalP, C: finalC };
+}
+
+// ===== 背景画像プラグイン =====
+const backgroundImagePlugin = {
+  id: 'backgroundImage',
+  beforeDraw: (chart) => {
+    const { ctx, chartArea } = chart;
+    const image = chart.config._config.options.backgroundImage;
+    if (image) {
+      ctx.save();
+      ctx.globalAlpha = 1.0;
+      ctx.drawImage(image, chartArea.left, chartArea.top, chartArea.width, chartArea.height);
+      ctx.restore();
+    }
+  }
+};
+
+
+// ================================
+// 結果コメント判定関数
+// ================================
+/*
+function getResultComment(p, c) {
+  // Pスコア70以上かつCスコア70以上
+  if (p >= 70 && c >= 70) {
+    return "理想的な状態と言えそうデス。この状態を継続していきまショウ。";
+  }
+
+  // Pスコア65以上かつCスコア40未満
+  if (p >= 65 && c < 40) {
+    return "心理的安全性はある程度の高さがあるのデ、もう少し挑戦のレベルを上げた方がもいいかもしれまセン。挑戦のレベルが低すぎると“やりがい”が低下し、離職につながってしまうことがアリマス。";
+  }
+
+  // Pスコア40未満かつCスコア60以上
+  if (p < 40 && c >= 60) {
+    return "挑戦の高さに対して、心理的安全性の高さが見合ってイナイようデス。一時的には乗り越えられるかもしれませんガ、この状態は決して健全とは言えまセン。心理的安全性を高めるための組織改善をおススメします。";
+  }
+
+  // どちらも低い場合（Pスコア40未満かつCスコア40未満）
+  if (p < 40 && c < 40) {
+    return "心理的安全性も挑戦も低い状態デス。組織の停滞を招く可能性が高く、マズは心理的な部分で安心につながるコミュニケーション環境づくりから始めることをオススメします。";
+  }
+
+  // Pスコア65以上かつPスコアとCスコアの差が15以上
+  if (p >= 65 && p - c >= 15) {
+    return "心理的安全性はある程度の高さがあるのデ、もう少し挑戦のレベルを上げた方がもいいかもしれまセン。";
+  }
+
+  // Pスコアが50未満かつCスコアとPスコアの差が10以上
+  if (p < 40 && c - p >= 10) {
+    return "心理的安全性を上げていきましょう。";
+  }
+
+  // その他の中間パターン
+  return "心理的安全性と挑戦のバランスは一定の水準となってイマスガ、改善の余地がアリマス。組織の状況を定期的に確認シ、小さな改善を積み重ねていきまショウ。";
+}
+*/
+function getResultComment(p, c) {
+  // 1. 理想的な状態（最上位）
+  if (p >= 70 && c >= 70) {
+    return "理想的な状態です。この状態を継続していきましょう。";
+  }
+
+  // 2. どちらも低い（最優先でキャッチ）
+  else if (p < 40 && c < 40) {
+    return "心理的安全性も挑戦も低い状態です。組織が停滞している可能性が高く、まずは安心できるコミュニケーション環境づくりから始めましょう。";
+  }
+
+  // 3. 挑戦が高いが心理的安全性が低い（危険なアンバランス）
+  else if (p < 40 && c >= 60) {
+    return "挑戦のレベルに対して心理的安全性が不足しています。この状態が続くとメンバーの負担が大きく、持続的な成長は難しくなります。心理的安全性を高めるための組織改善が必要です。";
+  }
+
+  // 4. 心理的安全性が高いが挑戦が極端に低い（やりがい不足）
+  else if (p >= 65 && c < 40) {
+    return "心理的安全性は高い状態ですが、挑戦が不足しています。このままではやりがいが低下し、離職につながる恐れがあります。少しずつ挑戦レベルを引き上げましょう。";
+  }
+
+  // 5. 心理的安全性が高めで、挑戦とのギャップが大きい
+  else if (p >= 65 && (p - c >= 15)) {
+    return "心理的安全性はある程度確保されています。挑戦レベルを徐々に引き上げることを検討しましょう。";
+  }
+
+  // 6. 心理的安全性が低く、挑戦との差がやや大きい
+  else if (p < 40 && (c - p >= 10)) {
+    return "心理的安全性を高めていく必要があります。安心して挑戦できる環境を少しずつ整えていきましょう。";
+  }
+
+  // 7. その他（中間ゾーン）
+  else {
+    return "心理的安全性と挑戦のバランスは一定水準にありますが、改善の余地があります。定期的に状況を確認し、小さな改善を積み重ねていきましょう。";
+  }
+}
+
+
+
+// ================================
+// 結果表示
+// ================================
+function showResult() {
+  chat.innerHTML = "";
+
+  const adjusted = applyTermAdjustments(pScore, cScore, selectedTerms);
+
+  // 結果メッセージ
+  addMsg("🤖：診断ガ終ワリマシタ！結果はコチラデス！<br>", "bot");
+
+  setTimeout(() => {
+    addMsg2(
+      `<span class="score">挑戦スコア: <strong style="font-size:24px;">${adjusted.C}</strong> / 100</span>
+       <span class="score">心理的安全性スコア: <strong style="font-size:24px;">${adjusted.P}</strong> / 100</span>`,
+      "bot"
+    );
+  }, 1200);
+
+  // ★ここで診断コメントを表示
+  setTimeout(() => {
+    const comment = getResultComment(adjusted.P, adjusted.C);
+    addMsg(`<br>🤖：【診断コメント】<br>${comment}`, "bot");
+  }, 2500);
+
+
+  setTimeout(() => {
+    addMsg("<br>🤖：続ケテ、アナタの組織（チーム）の“学習と成長”の状態を表す《心理的安全性―挑戦マトリクス》を作成シマス。", "bot");
+  }, 4500);
+
+  // グラフ描画
+  setTimeout(() => {
+    const ctx = document.getElementById('resultChart').getContext('2d');
+    const bgImage = new Image();
+    bgImage.src = 'area.png';
+
+    bgImage.onload = () => {
+      new Chart(ctx, {
+        type: 'scatter',
+        data: {
+          datasets: [{
+            label: 'チームの現在位置',
+            data: [{ x: adjusted.P, y: adjusted.C }],
+            backgroundColor: 'rgba(255,50,50,0.8)',
+            pointRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          backgroundImage: bgImage,
+          plugins: {
+            legend: { display: false },
+            title: {
+              display: true,
+              text: '《心理的安全性―挑戦マトリクス》',
+              font: { size: 18, weight: 'bold' },
+              color: '#000',
+              padding: { top: 10, bottom: 30 }
+            }
+          },
+          layout: { padding: 0 },
+          scales: {
+            x: {
+              title: { display: true, text: '心理的安全性スコア', color: '#000' },
+              min: 0,
+              max: 100,
+              ticks: { stepSize: 20, color: '#000' },
+              grid: { color: 'transparent' }
+            },
+            y: {
+              title: { display: true, text: '挑戦スコア', color: '#000' },
+              min: 0,
+              max: 100,
+              ticks: { stepSize: 20, color: '#000' },
+              grid: { color: 'transparent' }
+            }
+          }
+        },
+        plugins: [backgroundImagePlugin]
+      });
+
+      // ✅ グラフ描画完了後にボタン追加
+      setTimeout(() => {
+        const buttonsContainer = document.getElementById("result-buttons");
+        buttonsContainer.innerHTML = ""; // 初期化
+
+        // 共通ボタン作成関数
+        const createButton = (tag, contentHtml, className, onClickOrHref) => {
+        // tag: "a" ならリンク、"button" ならボタン（または "button" 以外はボタン扱い）
+        const isLink = tag === "a";
+        const el = document.createElement(isLink ? "a" : "button");
+
+        // クラスは先に付与しておく
+        el.className = `action-btn ${className || ""}`;
+
+        if (isLink) {
+          // onClickOrHref は href の文字列として扱う
+          el.href = onClickOrHref || "#";
+          el.target = "_blank";
+          el.rel = "noopener noreferrer";
+          // contentHtml を HTML として挿入（<br>を反映させたい場合に必要）
+          el.innerHTML = contentHtml;
+        } else {
+          // ボタンの場合、onClickOrHref は関数
+          el.type = "button";
+          el.innerHTML = contentHtml;
+          if (typeof onClickOrHref === "function") {
+            el.addEventListener("click", onClickOrHref);
+          }
+        }
+
+          return el;
+        };
+
+
+        // ① Xシェアボタン
+        const shareBtn = createButton(
+          "a",
+          "Xでシェアする",
+          "share-btn",
+          createShareLink(adjusted.P, adjusted.C)
+        );
+
+        // ② 再診断ボタン
+        const retryBtn = createButton(
+          "button",
+          "もう一度診断する",
+          "ghost",
+          () => location.reload()
+        );
+
+        // ③ noteプロフィールボタン
+        const noteBtn = createButton(
+          "a",
+          "この診断を作った人はこちら<br>（noteプロフィールへ）",
+          "note-btn",
+          "https://note.com/alc_chron2025"
+        );
+
+        // 配置（上から順番に追加）
+        buttonsContainer.appendChild(shareBtn);
+        buttonsContainer.appendChild(retryBtn);
+        buttonsContainer.appendChild(noteBtn);
+      }, 300); // 少し遅らせて表示
+    };
+  }, 7000);
+}
+
+
+// ================================
+// Xシェアリンク
+// ================================
+function createShareLink(p, c) {
+  const text = `チーム診断結果\n心理的安全性スコア: ${p}\n挑戦スコア: ${c}\n#チーム診断`;
+  return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+}
+
+  </script>
+</body>
+</html>
