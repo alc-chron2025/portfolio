@@ -541,7 +541,7 @@ function renderRadarChart(container, normalized12) {
 // --------------------
 function createShareLink(action, thinking, teamwork) {
   const text = encodeURIComponent(
-    `社会人基礎力診断の結果：\n前に踏み出す力：${action}\n考え抜く力：${thinking}\nチームで働く力：${teamwork}\n#社会人基礎力診断`
+    `社会人基礎力チェックの結果：\n前に踏み出す力：${action} /10\n考え抜く力：${thinking} /10\nチームで働く力：${teamwork} /10\n#社会人基礎力診断 #自己分析 #あるく戦記`
   );
   return `https://twitter.com/intent/tweet?text=${text}`;
 }
@@ -569,7 +569,7 @@ function renderResultButtons(actionScore, thinkingScore, teamworkScore) {
   noteBtn.target = "_blank";
   noteBtn.rel = "noopener noreferrer";
   noteBtn.className = "action-btn note-btn";
-  noteBtn.textContent = "noteプロフィール";
+  noteBtn.textContent = "このアプリを作った人\n（noteプロフィール）";
   buttonsContainer.appendChild(noteBtn);
 }
 
