@@ -541,7 +541,7 @@ function renderRadarChart(container, normalized12) {
 // --------------------
 function createShareLink(action, thinking, teamwork) {
   const text = encodeURIComponent(
-    `社会人基礎力チェックの結果：\n前に踏み出す力：${action} /10点\n考え抜く力：${thinking} /10点\nチームで働く力：${teamwork} /10点\n動物キャラ診断：${animal.name}\n#社会人基礎力診断 #自己分析 #あるく戦記`
+    `社会人基礎力チェックの結果：\n前に踏み出す力：${action} /10点\n考え抜く力：${thinking} /10点\nチームで働く力：${teamwork} /10点\n#社会人基礎力診断 #自己分析 #あるく戦記`
   );
   return `https://twitter.com/intent/tweet?text=${text}`;
 }
