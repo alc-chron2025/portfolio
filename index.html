@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>社会人基礎力診断チェック</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+  /* =====================
+     共通レイアウト・ベース
+  ===================== */
+  body {
+    font-family: "Hiragino Sans", "Arial", sans-serif;
+    background: #f4f4f4;
+    padding: 20px;
+    text-align: center;
+    color: #252525;
+  }
+
+  /* =====================
+     スタート画面
+  ===================== */
+  #Screen {
+    text-align: center;
+    padding: 30px;
+    max-width: 600px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+
+  #startBtn {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  #startBtn:hover {
+    opacity: 0.9;
+    background-color: #005fe0;
+  }
+
+  /* =====================
+     質問エリア・共通UI
+  ===================== */
+  #chat-container {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+  }
+
+  .status {
+    font-size: 18px;
+    margin-bottom: 16px;
+    font-weight: bold;
+  }
+
+  .likert-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* =====================
+     円形スケール（7段階）
+  ===================== */
+  .circles {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    justify-items: center;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+    text-align: center;
+    gap: 140px;
+  }
+
+  /* 円ボタン共通 */
+  .circle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: white;
+    border: 3px solid #666;
+  }
+
+  /* サイズ */
+  .size0 { width: 40px; height: 40px; }
+  .size1 { width: 32px; height: 32px; }
+  .size2 { width: 28px; height: 28px; }
+  .size3 { width: 26px; height: 26px; }
+
+  input[type="radio"] { display: none; }
+
+  /* 色設定（赤→黄→緑） */
+  input[id$="_0"] + .circle { border-color: #e74c3c; color: #e74c3c; } /* 赤 */
+  input[id$="_1"] + .circle { border-color: #ff7802; color: #ff7802; } /* 赤橙 */
+  input[id$="_2"] + .circle { border-color: #ffc505; color: #ffc505; } /* 橙黄 */
+  input[id$="_3"] + .circle { border-color: #f2ee0c; color: #f2ee0c; } /* 真ん中黄 */
+  input[id$="_4"] + .circle { border-color: #9cfd00; color: #9cfd00; } /* 黄緑 */
+  input[id$="_5"] + .circle { border-color: #04ff00; color: #04ff00; } /* 緑黄 */
+  input[id$="_6"] + .circle { border-color: #009f18; color: #009f18; } /* 緑 */
+
+  input[type="radio"]:checked + .circle {
+    background-color: currentColor;
+    border-color: currentColor;
+  }
+
+  /* =====================
+     テキスト・ボタン類
+  ===================== */
+  .label-text {
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .progress {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #555;
+  }
+
+  button {
+    margin: 20px 8px;
+    padding: 7px 18px;
+    font-size: 16px;
+    border: none;
+    background-color: #026ffe;
+    color: white;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #005fe0;
+  }
+
+  .options-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .option-btn {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    text-align: left;
+  }
+  .option-btn.selected {
+    background: #1dbfff86;
+    border: 0.5px #007BFF;
+    color: #000;
+  }
+  .none-btn {
+    text-align: center;
+    font-weight: bold;
+    background-color: #ddd;
+  }
+  .next-btn, .restart-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 15px;
+  }
+  button:hover {
+    opacity: 0.8;
+    background: #0073ffe2;
+    color: #fff;
+  }
+  .result {
+    white-space: pre-line;
+    margin-bottom: 20px;
+  }
+  .action-btn {
+    display: block;
+    width: 340px;
+    max-width: 90%;
+    margin: 10px auto;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 16px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background-color 0.3s;
+  }
+  .share-btn { background-color: #1DA1F2; color: #fff; font-weight: bold; }
+  .share-btn:hover { background-color: #0d8ddb; }
+  .ghost { background-color: #333; border: 0.5px solid #666; color: #fff; }
+  .ghost:hover { background-color: #000; }
+  .note-btn { background-color: #f5f5f5; border: 0.5px solid #666; color: #000; }
+  .note-btn:hover { background-color: #eaeaea; }
+
+  /* =====================
+     モバイル対応
+  ===================== */
+  @media (max-width: 480px) {
+    .size0 { width: 32px; height: 32px; }
+    .size1 { width: 26px; height: 26px; }
+    .size2 { width: 22px; height: 22px; }
+    .size3 { width: 20px; height: 20px; }
+    .label-text { font-size: 10px; }
+    .labels { gap: 80px; }
+  }
+</style>
+
+</head>
+<body>
+
+
+
+<div id="Screen">
+<div id="startScreen">
+  <h2>社会人基礎力チェック</h2>
+  <p>あなたの社会人基礎力（3領域・12能力）を測定できます。<br>
+  結果はグラフで表示され、自己分析やキャリア形成に活かせます。</p>
+  <br>
+  
+  <p>所要時間 6～10分程度<br>質問数 36問</p>
+  <br>
+  <p>※素の自分を反映するためには直感で回答するのがポイントです</p>
+  <br>
+  
+
+  <button id="startBtn">チェックスタート</button>
+</div>
+  
+<div id="questionScreen" style="display: none;">
+  <h2>あなたの考えや行動パターンは？</h2>
+  <div class="status" id="questionText"></div>
+
+  <div class="likert-container">
+    <div class="circles" id="choices"></div>
+    <div class="labels">
+      <span>◀ あてはまらない</span>
+      <span>あてはまる ▶</span>
+    </div>
+  </div>
+
+  <div class="progress" id="progress">1 / 36</div>
+
+  <div>
+    <button id="prevBtn">戻る</button>
+    <button id="nextBtn">次へ</button>
+  </div>
+
+</div>
+
+  <div id="result-container" style="margin-top:20px;"></div>
+  <div id="result-buttons" style="margin-top:20px;"></div>
+</div>
+
+<script>
+  const startBtn = document.getElementById("startBtn");
+  const startScreen = document.getElementById("startScreen");
+  const questionScreen = document.getElementById("questionScreen");
+
+  startBtn.addEventListener("click", () => {
+    // スタート画面を非表示
+    startScreen.style.display = "none";
+
+    // 質問画面を表示
+    questionScreen.style.display = "block";
+  });
+
+/* =====================
+   質問データベース
+===================== */
+const questions = [
+  { id:1, category:"action", ability:"A", text:"自分自身の意思や価値観に基づいて考え行動する", answer:null },
+  { id:2, category:"action", ability:"A", text:"自己啓発に積極的に取り組んでいる", answer:null },
+  { id:3, category:"action", ability:"A", text:"何事も自分ごととして受け止めて行動する", answer:null },
+  { id:4, category:"action", ability:"B", text:"他者や周囲の環境に対して自分から積極的に関わる", answer:null },
+  { id:5, category:"action", ability:"B", text:"相手の行動や考え方を変えたり協力を引き出している", answer:null },
+  { id:6, category:"action", ability:"B", text:"他者に関わるときは攻撃的な言動は避けている", answer:null },
+  { id:7, category:"action", ability:"C", text:"考えたことや計画したことを、実際に行動に移して成果を出す", answer:null },
+  { id:8, category:"action", ability:"C", text:"自分で目標を立て、粘り強く取り組む", answer:null },
+  { id:9, category:"action", ability:"C", text:"最後まで諦めずにやり遂げる", answer:null },
+  { id:10, category:"action", ability:"D", text:"現状を客観的にとらえ、問題点や改善点を見つけ出す", answer:null },
+  { id:11, category:"action", ability:"D", text:"なぜそうなっているかを常に考え、ものごとの本質を探る", answer:null },
+  { id:12, category:"action", ability:"D", text:"現状とあるべき姿とのギャップを意識している", answer:null },
+  { id:13, category:"action", ability:"E", text:"目標達成に必要な手順や資源を整理し、現実的な道筋を立てる", answer:null },
+  { id:14, category:"action", ability:"E", text:"状況を見極めながら柔軟に調整して実行可能な形に落とし込む", answer:null },
+  { id:15, category:"action", ability:"E", text:"最善のプロセスの複数案を検討する", answer:null },
+  { id:16, category:"action", ability:"F", text:"既存の枠にとらわれずに新しいアイデアや価値観を思いつく", answer:null },
+  { id:17, category:"action", ability:"F", text:"知識や経験を組み合わせて、新しい発想や解決策を思いつく", answer:null },
+  { id:18, category:"action", ability:"F", text:"時代の変化を先取りして生活や仕事の中で取り入れている", answer:null },
+  { id:19, category:"action", ability:"G", text:"自分の考えや感情などを相手に分かりやすく効果的に伝える", answer:null },
+  { id:20, category:"action", ability:"G", text:"単に話す・書くだけでなく、「何を」「どう伝えるか」を意識する", answer:null },
+  { id:21, category:"action", ability:"G", text:"話すときは気持ちを込めながら視線を相手に向けている", answer:null },
+  { id:22, category:"action", ability:"H", text:"相手の話をただ「聞く」のではなく、深く理解しようとする", answer:null },
+  { id:23, category:"action", ability:"H", text:"相手の感情や意図、背景までを察することで信頼関係を築く", answer:null },
+  { id:24, category:"action", ability:"H", text:"適切なタイミングで質問して意見を引き出す", answer:null },
+  { id:25, category:"action", ability:"I", text:"状況の変化や相手の考えに応じて、自分の行動や考え方を調整する", answer:null },
+  { id:26, category:"action", ability:"I", text:"自分の軸を持ちながらも、こだわりすぎず、最適な対応を選ぶ", answer:null },
+  { id:27, category:"action", ability:"I", text:"他者からのアドバイスを素直に受け入れる", answer:null },
+  { id:28, category:"action", ability:"J", text:"目の前の状況や周囲の変化を正確に読み取って理解している", answer:null },
+  { id:29, category:"action", ability:"J", text:"チームで働くときは、自分の役割を理解して行動する", answer:null },
+  { id:30, category:"action", ability:"J", text:"チーム全体へ気を配り、利己的な態度はとらない", answer:null },
+  { id:31, category:"action", ability:"K", text:"ルールや約束・時間・手順などを守る", answer:null },
+  { id:32, category:"action", ability:"K", text:"倫理観をもって公正に対応し、社会のルールに則って行動する", answer:null },
+  { id:33, category:"action", ability:"K", text:"決められたことには素直に従う", answer:null },
+  { id:34, category:"action", ability:"L", text:"心身に負荷がかかった状況でも冷静さを保ってコントールできる", answer:null },
+  { id:35, category:"action", ability:"L", text:"ストレスを感じたときの自分なりの気晴らしの方法を持っている", answer:null },
+  { id:36, category:"action", ability:"L", text:"ストレスのある状況に対して、成長の機会だと前向きにとらえる", answer:null }
+];
+
+/* =====================
+   スクリプトロジック
+===================== */
+let current = 0;
+const total = questions.length;
+
+const questionText = document.getElementById("questionText");
+const choicesDiv = document.getElementById("choices");
+const progress = document.getElementById("progress");
+const container = document.getElementById("result-container");
+
+// --------------------
+// 質問描画
+// --------------------
+function renderQuestion() {
+  const q = questions[current];
+  questionText.textContent = `Q${q.id}. ${q.text}`;
+  progress.textContent = `${current + 1} / ${total}`;
+  renderChoices();
+}
+
+function renderChoices() {
+  choicesDiv.innerHTML = "";
+  for (let i = 0; i < 7; i++) {
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "answer";
+    input.id = `q${current}_${i}`;
+    input.value = i;
+    const label = document.createElement("label");
+    label.className =
+      i === 0 || i === 6
+        ? "circle size0"
+        : i === 1 || i === 5
+        ? "circle size1"
+        : i === 2 || i === 4
+        ? "circle size2"
+        : "circle size3";
+    label.setAttribute("for", input.id);
+    if (questions[current].answer === i) input.checked = true;
+    input.addEventListener("change", () => (questions[current].answer = i));
+    choicesDiv.appendChild(input);
+    choicesDiv.appendChild(label);
+  }
+}
+
+document.getElementById("nextBtn").addEventListener("click", () => {
+  if (questions[current].answer === null) {
+    alert("回答を選択してください。");
+    return;
+  }
+  if (current < total - 1) {
+    current++;
+    renderQuestion();
+  } else {
+    if (confirm("全ての質問に回答しました。結果を表示しますか？")) showResult();
+  }
+});
+
+document.getElementById("prevBtn").addEventListener("click", () => {
+  if (current > 0) {
+    current--;
+    renderQuestion();
+  }
+});
+
+renderQuestion();
+
+// --------------------
+// 回答集計
+// --------------------
+function getAnswersFromQuestions(qs) {
+  const answers = {};
+  qs.forEach((q) => {
+    if (!answers[q.ability]) answers[q.ability] = [];
+    answers[q.ability].push(q.answer ?? 0);
+  });
+  return answers;
+}
+
+
+function calculateScores(answers) {
+  const scores = { A: 0, B: 0, C: 0, D: 0, E: 0, F: 0, G: 0, H: 0, I: 0, J: 0, K: 0, L: 0 };
+  const category = { action: 0, thinking: 0, teamwork: 0 };
+
+  // 各能力が存在する場合だけreduceを実行
+  for (const key in scores) {
+    if (answers[key]) {
+      scores[key] = answers[key].reduce((total, num) => total + num, 0);
+    }
+  }
+
+  // カテゴリー別合計
+  category.action = scores.A + scores.B + scores.C;
+  category.thinking = scores.D + scores.E + scores.F;
+  category.teamwork = scores.G + scores.H + scores.I + scores.J + scores.K + scores.L;
+
+  return { scores, category };
+}
+
+
+// --------------------
+// スコア正規化
+// --------------------
+function normalizeScores(scores, category) {
+
+  // アビリティスコアを0~10に正規化
+  const normalized12 = {
+    A: parseFloat((scores.A / 18 * 10).toFixed(1)),
+    B: parseFloat((scores.B / 18 * 10).toFixed(1)),
+    C: parseFloat((scores.C / 18 * 10).toFixed(1)),
+    D: parseFloat((scores.D / 18 * 10).toFixed(1)),
+    E: parseFloat((scores.E / 18 * 10).toFixed(1)),
+    F: parseFloat((scores.F / 18 * 10).toFixed(1)),
+    G: parseFloat((scores.G / 18 * 10).toFixed(1)),
+    H: parseFloat((scores.H / 18 * 10).toFixed(1)),
+    I: parseFloat((scores.I / 18 * 10).toFixed(1)),
+    J: parseFloat((scores.J / 18 * 10).toFixed(1)),
+    K: parseFloat((scores.K / 18 * 10).toFixed(1)),
+    L: parseFloat((scores.L / 18 * 10).toFixed(1)),
+  };
+
+
+  // カテゴリースコアを0~10に正規化
+  let actionScore = parseFloat((category.action / 54 * 10).toFixed(1));
+  let thinkingScore = parseFloat((category.thinking / 54 * 10).toFixed(1));
+  let teamworkScore = parseFloat((category.teamwork / 108 * 10).toFixed(1));
+
+
+  return { normalized12, actionScore, thinkingScore, teamworkScore };
+}
+
+
+// --------------------
+// チャート描画
+// --------------------
+function renderBarChart(container, actionScore, thinkingScore, teamworkScore) {
+  const canvas = document.createElement("canvas");
+  container.appendChild(canvas);
+
+  new Chart(canvas, {
+    type: "bar",
+    data: {
+      labels: ["前に踏み出す力", "考え抜く力", "チームで働く力"],
+      datasets: [
+        {
+          label: "3大分類スコア",
+          data: [actionScore, thinkingScore, teamworkScore],
+          backgroundColor: [
+            "rgba(250, 50, 50, 0.4)",
+            "rgba(0, 50, 250, 0.4)",
+            "rgba(50, 250, 50, 0.4)",
+          ],
+          borderColor: [
+            "rgba(250, 50, 50, 1)",
+            "rgba(0, 50, 250, 1)",
+            "rgba(50, 250, 50, 1)",
+          ],
+          borderWidth: 0.5,
+        },
+      ],
+    },
+    options: {
+      indexAxis: "y",
+      responsive: true,
+      scales: { x: { beginAtZero: true, max: 10 } },
+      plugins: { legend: { display: false } },
+    },
+  });
+}
+
+function renderRadarChart(container, normalized12) {
+  const radarData = ["A","B","C","D","E","F","G","H","I","J","K","L"].map(k => normalized12[k] ?? 0);
+  const canvas = document.createElement("canvas");
+  container.appendChild(canvas);
+
+  new Chart(canvas, {
+    type: "radar",
+    data: {
+      labels: ["主体性","働きかけ力","実行力","課題発見力","計画力","創造力",
+               "発信力","傾聴力","柔軟性","状況把握力","規律性","ｽﾄﾚｽｺﾝﾄﾛｰﾙ力"],
+      datasets: [
+        {
+          label: "12能力スコア",
+          data: radarData,
+          backgroundColor: "rgba(240, 200, 0, 0.4)",
+          borderColor: "rgba(255, 160, 0, 1)",
+          borderWidth: 0.5,
+          pointBackgroundColor: "rgba(255, 100, 0, 1)",
+          pointRadius: 2,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      scales: { r: { min: 0, max: 10, ticks: { stepSize: 2 } } },
+      plugins: { legend: { display: false } },
+    },
+  });
+}
+
+
+// --------------------
+// 結果シェアボタン作成
+// --------------------
+function createShareLink(action, thinking, teamwork) {
+  const text = encodeURIComponent(
+    `社会人基礎力診断の結果：\n前に踏み出す力：${action}\n考え抜く力：${thinking}\nチームで働く力：${teamwork}\n#社会人基礎力診断`
+  );
+  return `https://twitter.com/intent/tweet?text=${text}`;
+}
+
+function renderResultButtons(actionScore, thinkingScore, teamworkScore) {
+  const buttonsContainer = document.getElementById("result-buttons");
+  buttonsContainer.innerHTML = "";
+
+  const shareBtn = document.createElement("a");
+  shareBtn.href = createShareLink(actionScore, thinkingScore, teamworkScore);
+  shareBtn.target = "_blank";
+  shareBtn.rel = "noopener noreferrer";
+  shareBtn.className = "action-btn share-btn";
+  shareBtn.textContent = "Xでシェア";
+  buttonsContainer.appendChild(shareBtn);
+
+  const restartBtn = document.createElement("button");
+  restartBtn.className = "action-btn ghost";
+  restartBtn.textContent = "もう一度診断する";
+  restartBtn.addEventListener("click", () => location.reload());
+  buttonsContainer.appendChild(restartBtn);
+
+  const noteBtn = document.createElement("a");
+  noteBtn.href = "https://note.com/alc_chron2025";
+  noteBtn.target = "_blank";
+  noteBtn.rel = "noopener noreferrer";
+  noteBtn.className = "action-btn note-btn";
+  noteBtn.textContent = "noteプロフィール";
+  buttonsContainer.appendChild(noteBtn);
+}
+
+// --------------------
+// 結果表示
+// --------------------
+function showResult() {
+    
+    // 質問画面を非表示
+    questionScreen.style.display = "none";
+
+    
+  const container = document.getElementById("result-container");
+  container.innerHTML = "";
+
+  // ヘッダー
+  container.insertAdjacentHTML(
+    "beforeend",
+    '<div style="text-align:center;font-size:16px;font-weight:bold;">《社会人基礎力チェックの結果》<br><br></div>'
+  );
+
+  // ①回答集計→スコア計算→正規化
+  const answers = getAnswersFromQuestions(questions);
+  const scoresObj = calculateScores(answers);
+  const { normalized12, actionScore, thinkingScore, teamworkScore } = normalizeScores(
+    scoresObj.scores,
+    scoresObj.category
+  );
+
+  // ②棒グラフ（3大分類）
+  renderBarChart(container, actionScore, thinkingScore, teamworkScore);
+
+  // ③レーダーチャート（12能力）
+  renderRadarChart(container, normalized12);
+
+//////////////////////////////////////////////////////////////////////////////////////  
+ // ④ 強みトップ3（6.5点以上のみ表示）
+function getTop3Abilities(normalized12) {
+  // スコアを降順に並べ替え
+  const sorted = Object.entries(normalized12).sort((a, b) => b[1] - a[1]);
+  // 上位3件を取得
+  return sorted.slice(0, 3);
+}
+
+// ⑤ 課題下位3（3点未満のみ表示）
+function getBottom3Abilities(normalized12) {
+  // スコアを昇順に並べ替え
+  const sorted = Object.entries(normalized12).sort((a, b) => a[1] - b[1]);
+  // 下位3件を取得
+  return sorted.slice(0, 3);
+}
+
+// --- 表示処理 ---
+const labelMap = { 
+  A:"主体性", B:"働きかけ力", C:"実行力", D:"課題発見力", 
+  E:"計画力", F:"創造力", G:"発信力", H:"傾聴力", 
+  I:"柔軟性", J:"状況把握力", K:"規律性", L:"ｽﾄﾚｽｺﾝﾄﾛｰﾙ力"
+};
+
+// 強み
+const top3 = getTop3Abilities(normalized12).filter(([_, score]) => score >= 6.5);
+const topDiv = document.createElement("div");
+topDiv.style.marginTop = "10px";
+topDiv.innerHTML = "<strong>《 あなたの強み 》</strong><br>" +
+  (top3.length > 0
+    ? top3.map(([key, score]) => `${labelMap[key]}：${score} /10点`).join("<br>")
+    : "該当なし（6.5点以上の項目がありません）");
+container.appendChild(topDiv);
+
+// 課題
+const bottom3 = getBottom3Abilities(normalized12).filter(([_, score]) => score <= 5);
+const weakDiv = document.createElement("div");
+weakDiv.style.marginTop = "10px";
+weakDiv.innerHTML = "<strong>《 あなたの課題 》</strong><br>" +
+  (bottom3.length > 0
+    ? bottom3.map(([key, score]) => `${labelMap[key]}：${score} /10点`).join("<br>")
+    : "該当なし（5点以下の項目がありません）");
+container.appendChild(weakDiv);
+//////////////////////////////////////////////////////////////////////////////////////  
+  
+ 
+
+  // ⑥高得点カテゴリー（閾値7以上）
+  const highCategories = getHighCategoryScores(actionScore, thinkingScore, teamworkScore, 7);
+  if (highCategories.length > 0) {
+    const catDiv = document.createElement("div");
+    catDiv.style.marginTop = "10px";
+    catDiv.innerHTML = "<strong>《 あなたの得意領域 》</strong><br> " + highCategories.join(", ");
+    container.appendChild(catDiv);
+  }
+
+
+  // 動物キャラ割り当て
+  const abilityToAnimal = {
+  A: { name: "主体性の高いウマ", img: "images/uma.png" },
+  B: { name: "働きかけ力に優れたライオン", img: "images/lion.png" },
+  C: { name: "実行力のあるチーター", img: "images/cheetah.png" },
+  D: { name: "課題発見力に優れたフクロウ", img: "images/owl.png" },
+  E: { name: "計画力の高いリス", img: "images/squirrel.png" },
+  F: { name: "創造力豊かなユニコーン", img: "images/unicorn.png" },
+  G: { name: "発信力をもっているクジャク", img: "images/peacock.png" },
+  H: { name: "傾聴力に優れたゾウ", img: "images/elephant.png" },
+  I: { name: "柔軟性が高いカメレオン", img: "images/chameleon.png" },
+  J: { name: "状況把握力に優れたオオカミ", img: "images/wolf.png" },
+  K: { name: "規律性が高いペンギン", img: "images/penguin.png" },
+  L: { name: "ｽﾄﾚｽｺﾝﾄﾛｰﾙ力をもっているラクダ", img: "images/camel.png" }
+};
+
+
+function getAnimalCharacter(normalized12, threshold = 2) {
+  const scores = Object.values(normalized12);
+  const maxScore = Math.max(...scores);
+
+  // すべての能力が閾値以下ならヒヨコ
+  if (scores.every(s => s <= threshold)) {
+    return { name: "大器晩成型のヒヨコ", img: "images/chick.png" };
+  }
+
+  // 最高点が2つ以上ある場合はイルカ
+  const topCount = scores.filter(s => s === maxScore).length;
+  if (topCount >= 2) {
+    return { name: "マルチ能力に優れたイルカ", img: "images/dolphin.png" };
+  }
+
+  // トップ1が1つの場合は通常の動物に紐づけ
+  const topKey = Object.keys(normalized12).find(key => normalized12[key] === maxScore);
+  return abilityToAnimal[topKey];
+}
+
+
+
+// ----- 動物キャラ表示 -----
+const animal = getAnimalCharacter(normalized12); // ここでトップ1も複数も閾値も判定
+
+const animalDiv = document.createElement("div");
+animalDiv.style.marginTop = "10px";
+animalDiv.innerHTML = `
+  <strong>《 あなたの動物キャラ診断 》</strong><br>
+  ${animal.name}<br>
+  <img src="${animal.img}" alt="${animal.name}" style="width:240px;height:auto;margin-top:5px;">
+`;
+container.appendChild(animalDiv);
+
+
+
+  // ⑦結果シェア・再診断・noteボタン
+  renderResultButtons(actionScore, thinkingScore, teamworkScore);
+}
+
+// ---- 補助関数 ----
+function getTop3Abilities(normalized12) {
+  const abilitiesArray = Object.entries(normalized12);
+  abilitiesArray.sort((a, b) => b[1] - a[1]);
+  return abilitiesArray.slice(0, 3);
+}
+
+function getHighCategoryScores(actionScore, thinkingScore, teamworkScore, threshold = 7) {
+  const highCategories = [];
+  if (actionScore >= threshold) highCategories.push("アクション領域");
+  if (thinkingScore >= threshold) highCategories.push("シンキング領域");
+  if (teamworkScore >= threshold) highCategories.push("チームワーク領域");
+  return highCategories;
+}
+
+</script>
+
+</body>
+</html>
