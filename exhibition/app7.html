@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>タロット占いアプリ</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght=400;700&display=swap" rel="stylesheet">
+<style>
+/* =====================
+共通スタイル（全体）
+===================== */
+body {
+font-family: 'Zen Maru Gothic', sans-serif;
+text-align: center;
+background-color: #0a0a0a;
+color: #fff;
+margin: 0;
+padding: 0;
+overflow-x: hidden;
+/* 全体の上部にパディングを追加し、カードコンテナーを相対的に上に持ち上げる */
+padding-top: 50px;
+}
+
+h1 {
+font-size: 1.8em;
+margin: 25px 0 10px;
+}
+
+/* 神秘的な光 */
+.mystic-flame {
+position: absolute;
+top: 50%;
+left: 50%;
+width: 360px;
+height: 360px;
+transform: translate(-50%, -50%);
+background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+filter: blur(50px);
+animation: pulse 6s infinite;
+z-index: 0;
+}
+
+@keyframes pulse {
+0%, 100% { opacity: 0.4; }
+50% { opacity: 0.8; }
+}
+
+/* 占う・リセットボタンとテーマ選択のコンテナ */
+.btn-container {
+position: relative;
+z-index: 2;
+margin-top: 20px;
+}
+
+button {
+border: none;
+border-radius: 30px;
+width: 120px;
+height: 40px;
+margin: 5px;
+font-size: 1em;
+color: white;
+background: radial-gradient(circle at 30% 30%, #6a0dad, #240046);
+cursor: pointer;
+box-shadow: 0 0 10px rgba(255,255,255,0.2);
+transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+button:hover {
+transform: scale(1.05);
+box-shadow: 0 0 20px rgba(255,255,255,0.4);
+}
+
+/* ★NEW: テーマ選択・キャラ選択のスタイル */
+#themeSelect,#charaSelect {
+margin-top: 15px;
+padding: 8px 15px;
+border-radius: 20px;
+background-color: rgba(255, 255, 255, 0.1);
+color: #fff;
+border: 1px solid rgba(255, 255, 255, 0.3);
+font-family: 'Zen Maru Gothic', sans-serif;
+font-size: 1em;
+appearance: none; /* デフォルトの矢印を非表示に */
+background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23FFFFFF" viewBox="0 0 16 16"><path d="M7.247 11.14 2.451 5.658C1.885 5.012 2.345 4 3.204 4h9.592c.86 0 1.32 1.012.754 1.658L8.753 11.14a1 1 0 0 1-1.506 0z"/></svg>');
+background-repeat: no-repeat;
+background-position: right 10px center;
+padding-right: 30px;
+cursor: pointer;
+}
+
+#themeSelect option,#charaSelect option {
+background-color: #240046; /* ドロップダウンの背景色 */
+color: #fff;
+}
+
+/* --- カード配置 (六芒星レイアウト) --- */
+.card-container {
+display: grid;
+grid-template-columns: 1fr 1fr 1fr;
+grid-template-rows: repeat(5, 1fr);
+gap: 10px 5px;
+margin: 0 auto;
+min-width: 360px;
+max-width: 720px;
+position: relative;
+z-index: 1;
+align-items: start;
+justify-items: center;
+margin-bottom: 150px;
+}
+
+/* カードのコンテナ（サイズと3D空間の確保） */
+.card {
+width: 100px;
+height: 100px;
+perspective: 1000px;
+background-color: transparent;
+cursor: pointer;
+position: relative; /* ★position-labelの親要素として必要 */
+}
+
+/* ★NEW: 常に表示される位置ラベルのスタイル */
+.position-label {
+position: absolute;
+top: 50%;
+left: 50%;
+transform: translate(-50%, calc(-50% + 32px));
+z-index: 10; /* カードの回転要素よりも前面に表示 */
+color: #fff;
+font-size: 1.1em;
+font-weight: bold;
+padding: 5px 10px;
+background-color: rgba(0, 0, 0, 0.5);
+border-radius: 5px;
+white-space: nowrap;
+}
+
+/* カードの配置ルール（元のPOSITIONS配列のインデックス順に適用） */
+
+/* Card 0: 過去 (1段目, 中央) */
+.card:nth-child(1) { grid-area: 1 / 2 / 2 / 3; }
+
+/* Card 1: 現在 (4段目, 右) */
+.card:nth-child(2) { grid-area: 4 / 3 / 5 / 4; }
+
+/* Card 2: 未来 (4段目, 左) */
+.card:nth-child(3) { grid-area: 4 / 1 / 5 / 2; }
+
+/* Card 3: アドバイス (5段目, 中央) */
+.card:nth-child(4) { grid-area: 5 / 2 / 6 / 3; }
+
+/* Card 4: 相手 (2段目, 左) */
+.card:nth-child(5) { grid-area: 2 / 1 / 3 / 2; }
+
+/* Card 5: 自分 (2段目, 右) */
+.card:nth-child(6) { grid-area: 2 / 3 / 3 / 4; }
+
+/* Card 6: 最終結果 (3段目, 中央) */
+.card:nth-child(7) { grid-area: 3 / 2 / 4 / 3; }
+
+
+/* カードの回転部分 */
+.card-inner {
+position: relative;
+width: 100%;
+height: 100%;
+transition: transform 0.6s;
+transform-style: preserve-3d;
+z-index: 1; /* ラベルの下になるようにz-indexを設定 */
+}
+
+/* カードがめくれた時の回転 */
+.card.flipped .card-inner {
+transform: rotateY(180deg);
+}
+
+/* カードの表面（front）と裏面（back）の共通スタイル */
+.card-front, .card-back {
+position: absolute;
+width: 100%;
+height: 100%;
+backface-visibility: hidden;
+border-radius: 10px;
+overflow: hidden;
+/* ラベルを削除したので、Flexbox中央配置は不要だが、デザインのため残す */
+display: flex;
+justify-content: center;
+align-items: center;
+}
+
+/* 表面（タロット裏面） */
+.card-front {
+/*background-image: url('ura.jpg');*/
+background-size: cover;
+position: relative;
+}
+
+/* 裏面（絵札） */
+.card-back {
+transform: rotateY(180deg);
+}
+
+.card-back img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+
+/* 逆位置のスタイル */
+.card.reversed .card-back img {
+transform: rotate(180deg);
+}
+
+/* 結果表示エリア */
+table {
+width: 90%;
+min-width: 360px;
+margin: 20px auto;
+border-collapse: collapse;
+font-size: 0.95em;
+background: rgba(255,255,255,0.05);
+border-radius: 10px;
+overflow: hidden;
+position: relative; /* z-index指定のため */
+z-index: 2;
+}
+
+th, td {
+padding: 5px;
+border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+th {
+background-color: rgba(255,255,255,0.1);
+font-weight: bold;
+}
+
+/* プロンプトとコピーボタンのコンテナ */
+.prompt-container {
+width: 90%;
+min-width: 360px;
+margin: 20px auto;
+position: relative;
+z-index: 2; /* ボタンが背景より前に来るように */
+}
+
+#promptOutput {
+width: 100%;
+height: 150px;
+background: rgba(0, 0, 0, 0.3);
+color: #fff;
+border: 1px solid rgba(255,255,255,0.2);
+border-radius: 8px;
+padding: 10px;
+box-sizing: border-box; /* paddingを含めて幅100%にする */
+font-size: 0.9em;
+font-family: 'Zen Maru Gothic', sans-serif;
+}
+
+/* ★変更: コピーボタンのスタイルを #generatePrompt にも適用 */
+#copyPrompt, #generatePrompt {
+border: none;
+border-radius: 30px;
+width: 280px; /* 幅を少し広げる */
+height: 40px;
+margin-top: 10px; /* 上にマージン追加 */
+font-size: 1em;
+color: white;
+background: radial-gradient(circle at 30% 30%, #6a0dad, #240046);
+cursor: pointer;
+box-shadow: 0 0 10px rgba(255,255,255,0.2);
+transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* ★変更: hoverも両方のボタンに適用 */
+#copyPrompt:hover, #generatePrompt:hover {
+transform: scale(1.05);
+box-shadow: 0 0 20px rgba(255,255,255,0.4);
+}
+
+/* =====================
+結果ボタン（流用スタイル）
+===================== */
+.action-btn {
+display: block;
+width: 340px;
+max-width: 90%;
+margin: 10px auto;
+padding: 10px;
+border-radius: 8px;
+font-size: 16px;
+text-align: center;
+text-decoration: none;
+cursor: pointer;
+box-sizing: border-box;
+transition: background-color 0.3s;
+}
+.share-btn { background-color: #1DA1F2; color: #fff; font-weight: bold; }
+.share-btn:hover { background-color: #0d8ddb; }
+.ghost { background-color: #333; border: 0.5px solid #666; color: #fff; }
+.ghost:hover { background-color: #000; }
+.note-btn { background-color: #f5f5f5; border: 0.5px solid #666; color: #000; }
+.note-btn:hover { background-color: #eaeaea; }
+
+
+/* =====================
+スマホ対応（480px以下）
+===================== */
+@media (max-width: 480px) {
+h1 { font-size: 1.3em; }
+button {
+width: 90px;
+height: 40px;
+font-size: 0.85em;
+}
+.card {
+width: 80px;
+height: 120px;
+}
+.card-container {
+max-width: 300px;
+}
+.position-label {
+font-size: 0.9em;
+}
+table { font-size: 0.8em; }
+
+#promptOutput {
+height: 120px;
+font-size: 0.85em;
+}
+
+/* ★変更: スマホでも両方のボタンに適用 */
+#copyPrompt, #generatePrompt {
+width: 280px;
+font-size: 0.85em;
+}
+#themeSelect,#charaSelect {
+font-size: 0.85em;
+}
+}
+</style>
+</head>
+<body>
+<div class="mystic-flame"></div>
+<h1>🔮 タロット占い 🔮</h1>
+
+<div class="btn-container">
+
+<div style="margin: 0 auto; width: 50%; text-align: left;">
+<span>
+    <small>
+    《 このアプリの操作説明 》<br>
+     1.占うボタンをクリック▶2.占いたいテーマを選択▶3.占って欲しいキャラを選択▶4.プロンプト生成ボタンをクリック▶5.プロンプトコピーボタンをクリック▶6.お好きなAIを起動しプロンプトを貼付け＆実行
+    </small>
+</span>
+
+</div>
+
+<br>
+
+<button id="uranau">占う</button>
+<button id="reset">リセット</button>
+
+</div>
+
+<div class="card-container" id="cardContainer">
+</div>
+
+<p style="margin: 15px 0 0; font-size: 0.9em;">占いたいテーマを選択</p>
+<select id="themeSelect">
+    <option value="総合">総合運</option>
+    <option value="仕事・キャリア">仕事・キャリア運</option>
+    <option value="金運・財産">金運・財産運</option>
+    <option value="恋愛">恋愛運</option>
+</select>
+<br>
+
+<p style="margin: 15px 0 0; font-size: 0.9em;">占ってほしいキャラ</p>
+<select id="charaSelect">
+    <option value="高名なベテラン占い師">高名なベテラン占い師</option>
+    <option value="神秘を探求する大賢者">神秘を探求する大賢者</option>
+    <option value="毒舌スピリチュアル姐さん">毒舌スピリチュアル姐さん</option>
+    <option value="ゆるふわ占い好き女子">ゆるふわ占い好き女子</option>
+　　<option value="関西のおばちゃん">関西のおばちゃん</option>
+    <option value="闇の世界を支配する大魔王">闇の世界を支配する大魔王</option>
+</select>
+<br>
+
+<table id="resultTable">
+<thead>
+<tr><th>ヘキサグラム位置</th><th>カード</th><th>暗示キーワード</th></tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<br>
+
+<p>《AIにリーディング依頼するプロンプト》</p>
+
+<div class="prompt-container">
+<textarea id="promptOutput" readonly placeholder="ここにAIへのリーディング依頼プロンプトが表示されます..."></textarea>
+<button id="generatePrompt">AIへの依頼プロンプトを生成</button>
+<button id="copyPrompt" data-copy-text="">AIへの依頼プロンプトをコピー</button>
+<br>
+<span>▶プロンプトをAIにコピペすることでAIにリーディングしてもらえますよ♪</span><br>
+</div>
+
+<br>
+
+<div style="margin: 0 auto; width: 50%; text-align: left;">
+<span>
+    <small>
+    《 免責事項 》<br>
+    このタロット占いアプリは、心のヒントや気付きを得るためのものであり、決して未来を断定するものではありません。<br>
+    あなた自身の選択や行動によって“運命”は変えられます。したがって、占い結果はあくまで参考として受け取ってくださいね。
+    </small>
+</span>
+</div>
+<br>
+
+<div id="result-buttons" style="margin-top:20px; margin-bottom: 50px;"></div>
+
+
+<script>
+// =============================
+// タロットカードデータ
+// =============================
+const CARDS = [
+{ name: "愚者", img: "cards/0_fool.jpg", meaning: "自由・可能性・無邪気", reversed_meaning: "無謀・衝動・未熟" },
+{ name: "魔術師", img: "cards/1_magician.jpg", meaning: "創造・チャンス・スタート", reversed_meaning: "優柔不断・計画の中断・詐欺" },
+{ name: "女教皇", img: "cards/2_high_p.jpg", meaning: "直感・知恵・冷静", reversed_meaning: "ヒステリー・秘密・自己中心的" },
+{ name: "女帝", img: "cards/3_empress.jpg", meaning: "豊かさ・愛・創造力", reversed_meaning: "浪費・不倫・過保護" },
+{ name: "皇帝", img: "cards/4_emperor.jpg", meaning: "支配・安定・責任", reversed_meaning: "未熟・傲慢・優柔不断" },
+{ name: "法皇", img: "cards/5_houou.jpg", meaning: "教え・慈悲・信頼", reversed_meaning: "不信・束縛・保守的" },
+{ name: "恋人", img: "cards/6_lovers.jpg", meaning: "愛・選択・絆", reversed_meaning: "不和・破局・誤った選択" },
+{ name: "戦車", img: "cards/7_chariot.jpg", meaning: "勝利・前進・積極性", reversed_meaning: "暴走・挫折・無計画" },
+{ name: "力", img: "cards/8_strength.jpg", meaning: "勇気・忍耐・自信", reversed_meaning: "傲慢・挫折・無気力" },
+{ name: "隠者", img: "cards/9_hermit.jpg", meaning: "内省・探求・叡智", reversed_meaning: "閉鎖的・孤立・視野狭窄" },
+{ name: "運命の輪", img: "cards/10_wheel.jpg", meaning: "転機・チャンス・流れ", reversed_meaning: "不運・停止・状況の悪化" },
+{ name: "正義", img: "cards/11_justice.jpg", meaning: "公平・判断・均衡", reversed_meaning: "不公平・偏向・不正" },
+{ name: "吊るされた男", img: "cards/12_hungedman.jpg", meaning: "犠牲・洞察・視点の変化", reversed_meaning: "無駄な努力・停滞・エゴイズム" },
+{ name: "死神", img: "cards/13_death.jpg", meaning: "終焉・変化・再生", reversed_meaning: "停滞・未練・リスタート" },
+{ name: "節制", img: "cards/14_sessei.jpg", meaning: "調和・調整・安定", reversed_meaning: "不均衡・浪費・衝突" },
+{ name: "悪魔", img: "cards/15_devil.jpg", meaning: "欲望・執着・束縛", reversed_meaning: "解放・覚醒・断ち切る" },
+{ name: "塔", img: "cards/16_tower.jpg", meaning: "崩壊・突然の破局・リセット", reversed_meaning: "緊迫・回避・小さな変化" },
+{ name: "星", img: "cards/17_star.jpg", meaning: "希望・インスピレーション・再生", reversed_meaning: "失望・無気力・高すぎる理想" },
+{ name: "月", img: "cards/18_moon.jpg", meaning: "不安・曖昧さ・潜在的な危険", reversed_meaning: "不安の解消・真実の発見・光明" },
+{ name: "太陽", img: "cards/19_sun.jpg", meaning: "成功・喜び・祝福", reversed_meaning: "不調・落胆・延期" },
+{ name: "審判", img: "cards/20_judgement.jpg", meaning: "復活・決断・結果", reversed_meaning: "後悔・遅延・停滞" },
+{ name: "世界", img: "cards/21_world.jpg", meaning: "完成・達成・調和", reversed_meaning: "未完成・停滞・目標達成の遅れ" },
+];
+
+// カードのインデックスと役割を定義 (CSSのnth-childと対応)
+const POSITIONS = ["過去", "現在", "未来", "アドバイス", "相手", "自分", "最終結果"];
+
+// 結果テーブルの表示順 (過去・現在・未来の順)
+const RESULT_DISPLAY_MAP = [
+{ position: "過去", index: 0 },
+{ position: "現在", index: 1 },
+{ position: "未来", index: 2 },
+{ position: "アドバイス", index: 3 },
+{ position: "相手", index: 4 },
+{ position: "自分", index: 5 },
+{ position: "最終結果", index: 6 }
+];
+
+const container = document.getElementById("cardContainer");
+const resultTable = document.getElementById("resultTable").querySelector("tbody");
+const promptTextarea = document.getElementById("promptOutput");
+const copyButton = document.getElementById("copyPrompt");
+const themeSelect = document.getElementById("themeSelect");
+const charaSelect = document.getElementById("charaSelect");
+const buttonsContainer = document.getElementById("result-buttons");
+
+// ★変更: 占い結果（カード情報）のみを保持するグローバル変数を定義
+let currentResults = [];
+// テーマとキャラは生成時にドロップダウンから直接取得するように変更したため、グローバル変数での保持は不要になりましたが、リセット処理の都合上、占う時の値も保持しておきます。
+let currentTheme = "";
+let currentChara = "";
+
+
+// 初期カード生成（裏面） - ラベル追加
+function initCards() {
+container.innerHTML = "";
+POSITIONS.forEach((positionName, i) => {
+const card = document.createElement("div");
+card.className = "card";
+card.style.zIndex = POSITIONS.length - i; // カードの重なり順を設定
+
+const label = document.createElement("span");
+label.className = "position-label";
+label.textContent = positionName;
+card.appendChild(label);
+
+const cardInner = document.createElement("div");
+cardInner.className = "card-inner";
+
+const cardFront = document.createElement("div");
+cardFront.className = "card-front";
+
+const cardBack = document.createElement("div");
+cardBack.className = "card-back";
+
+cardInner.appendChild(cardFront);
+cardInner.appendChild(cardBack);
+card.appendChild(cardInner);
+container.appendChild(card);
+});
+}
+
+// --------------------
+// 結果シェアボタン作成 (流用)
+// --------------------
+function createShareLink(theme) {
+  const text = encodeURIComponent(
+    `タロット占い（テーマ: ${theme}）を試してみました！\nAIへのプロンプトも自動生成されるので便利です。\n#タロット占い #AI占い #ヘキサグラム #あるく戦記`
+  );
+  return `https://twitter.com/intent/tweet?text=${text}`;
+}
+
+function renderResultButtons(selectedTheme) {
+  buttonsContainer.innerHTML = "";
+
+  // Xでシェア
+  const shareBtn = document.createElement("a");
+  shareBtn.href = createShareLink(selectedTheme);
+  shareBtn.target = "_blank";
+  shareBtn.rel = "noopener noreferrer";
+  shareBtn.className = "action-btn share-btn";
+  shareBtn.textContent = "Xでシェア (結果をツイート)";
+  buttonsContainer.appendChild(shareBtn);
+
+  // もう一度診断する
+  const restartBtn = document.createElement("button");
+  restartBtn.className = "action-btn ghost";
+  restartBtn.textContent = "もう一度占う (リセット)";
+  restartBtn.addEventListener("click", () => location.reload()); // ページリロードでリセット
+  buttonsContainer.appendChild(restartBtn);
+
+  // noteプロフィール
+  const noteBtn = document.createElement("a");
+  // リンク先は元のコードから流用
+  noteBtn.href = "https://note.com/alc_chron2025";
+  noteBtn.target = "_blank";
+  noteBtn.rel = "noopener noreferrer";
+  noteBtn.className = "action-btn note-btn";
+  noteBtn.textContent = "アプリ制作者（noteプロフィール）";
+  buttonsContainer.appendChild(noteBtn);
+}
+
+
+// 占うボタン：カードをランダムに引く
+document.getElementById("uranau").addEventListener("click", () => {
+if (document.querySelectorAll(".card.flipped").length > 0) return;
+
+const shuffledCards = CARDS.sort(() => 0.5 - Math.random()).slice(0, POSITIONS.length);
+const cards = document.querySelectorAll(".card");
+resultTable.innerHTML = "";
+buttonsContainer.innerHTML = ""; 
+promptTextarea.value = ""; // ★変更: 占う時にプロンプトもクリア
+copyButton.dataset.copyText = ""; // ★変更: コピーボタンのデータもクリア
+
+const results = [];
+
+// ★変更: 占う時の設定をグローバル変数に保存 (シェアボタン表示用)
+currentTheme = themeSelect.value;
+currentChara = charaSelect.value;
+
+cards.forEach((card, i) => {
+const data = shuffledCards[i];
+const isReversed = Math.random() < 0.5;
+
+const img = document.createElement("img");
+img.src = data.img;
+img.alt = data.name;
+
+const cardBack = card.querySelector(".card-back");
+cardBack.innerHTML = '';
+cardBack.appendChild(img);
+
+setTimeout(() => {
+card.classList.add("flipped");
+if (isReversed) {
+card.classList.add("reversed");
+} else {
+card.classList.remove("reversed");
+}
+}, i * 300);
+
+const meaningText = isReversed ? `${data.reversed_meaning}` : `${data.meaning}`;
+results.push({
+originalIndex: i,
+position: POSITIONS[i],
+cardName: data.name,
+isReversed: isReversed,
+meaningText: meaningText
+});
+});
+
+// 結果の表示順をRESULT_DISPLAY_MAPに合わせて並べ替え、テーブルに出力
+setTimeout(() => {
+const sortedResults = RESULT_DISPLAY_MAP.map(mapItem => {
+return results.find(r => r.originalIndex === mapItem.index);
+});
+
+// ★変更: 結果（カード情報）をグローバル変数に保存
+currentResults = sortedResults;
+
+sortedResults.forEach(result => {
+const position = result.position;
+const cardName = result.cardName;
+const direction = result.isReversed ? '(逆位置)' : '(正位置)';
+const meaning = result.meaningText;
+
+// テーブルに行を追加
+const row = document.createElement("tr");
+row.innerHTML = `<td>${position}</td><td>${cardName}\n${direction}</td><td>${meaning}</td>`;
+resultTable.appendChild(row);
+});
+
+// ★変更: currentTheme を使ってボタンを表示
+renderResultButtons(currentTheme);
+
+}, cards.length * 300 + 100);
+});
+
+// リセット
+document.getElementById("reset").addEventListener("click", () => {
+resultTable.innerHTML = "";
+promptTextarea.value = ""; 
+buttonsContainer.innerHTML = ""; 
+if (copyButton.dataset.copyText) {
+delete copyButton.dataset.copyText; 
+}
+
+// ★変更: グローバル変数をリセット
+currentResults = [];
+currentTheme = "";
+currentChara = "";
+
+const cards = document.querySelectorAll(".card");
+cards.forEach(card => {
+card.classList.remove("flipped", "reversed");
+const cardBack = card.querySelector(".card-back");
+if (cardBack) {
+cardBack.innerHTML = '';
+}
+});
+});
+
+// ★★★★★
+// ★ NEW ★: プロンプト生成ボタンの処理 (テーマ・キャラをリアルタイム取得)
+// ★★★★★
+document.getElementById("generatePrompt").addEventListener("click", function() {
+    // 占いがまだ行われていない（結果がない）場合はアラート
+    if (currentResults.length === 0) {
+        alert("先に「占う」ボタンを押してください。");
+        return;
+    }
+
+    // ★修正点1 & 2: ドロップダウンから現在のテーマとキャラを直接取得
+    const newTheme = themeSelect.value;
+    const newChara = charaSelect.value;
+    
+    // プロンプトを構築
+    // ★修正点3: プロンプト生成に newChara と newTheme を使用
+    let promptTextForAI = `あなたは占いがよく当たると評判の“${newChara}”です。\n以下のタロット占いの結果（テーマ: ${newTheme}）を詳細にリーディングしてください。\n\n---\n`;
+
+    currentResults.forEach(result => {
+        const position = result.position;
+        const cardName = result.cardName;
+        const direction = result.isReversed ? '(逆位置)' : '(正位置)';
+        const meaning = result.meaningText;
+        promptTextForAI += `・${position}: ${cardName} ${direction} (暗示キーワード: ${meaning})\n`;
+    });
+
+    // ★修正点4: プロンプト生成に newTheme を使用
+    promptTextForAI += `---
+以上の7枚のカード（ヘキサグラム・スプレッド）から、${newTheme}運勢について、流れと具体的なアドバイスを読み解き、優しく導いてください。`;
+
+    // テキストエリアにプロンプトを表示
+    promptTextarea.value = promptTextForAI;
+
+    // コピーボタンにデータをセット
+    copyButton.dataset.copyText = promptTextForAI;
+
+    alert("AIへの依頼プロンプトを生成します。\n生成されたプロンプトをあなたの好きなAIにコピペしてみましょう。\nAIが占い結果についてフィードバックしてくれます。");
+});
+
+
+// プロンプトコピーボタンの処理
+copyButton.addEventListener("click", function() {
+// ★変更: data属性からテキストを取得
+const textToCopy = this.dataset.copyText;
+
+if (!textToCopy) {
+// ★変更: アラートの文言を変更
+alert("先に「AIへの依頼プロンプトを生成」ボタンを押してください。");
+return;
+}
+
+if (navigator.clipboard) {
+navigator.clipboard.writeText(textToCopy).then(() => {
+alert("コピーしました。\nあなたの好きなAIプロンプトに貼り付けて実行をしてみて。");
+}).catch(err => {
+alert("コピーに失敗しました。");
+console.error('Failed to copy: ', err);
+});
+} else {
+// 古いブラウザ用のフォールバック
+try {
+const textArea = document.createElement("textarea");
+textArea.value = textToCopy;
+textArea.style.position = "fixed"; 
+textArea.style.opacity = "0";
+document.body.appendChild(textArea);
+textArea.select();
+document.execCommand("copy");
+document.body.removeChild(textArea);
+alert("コピーしました");
+} catch (err) {
+alert("コピーに失敗しました。");
+}
+}
+});
+
+
+// 初期化呼び出し
+initCards();
+</script>
+</body>
+</html>
