@@ -350,17 +350,22 @@ font-size: 0.85em;
 
 <div style="margin: 0 auto; width: 50%; text-align: left;">
 <span>
-    <small>
-    《 このアプリの操作説明 》<br>
-     1.占うボタンをクリック▶2.占いたいテーマを選択▶3.占って欲しいキャラを選択▶4.プロンプト生成ボタンをクリック▶5.プロンプトコピーボタンをクリック▶6.お好きなAIを起動しプロンプトを貼付け＆実行
-    </small>
+    <small>
+    《 このアプリの操作手順 》<br>
+     ①占うボタンをクリックでカードがランダムに選ばれます<br>
+     ②占いたいテーマを選択<br>
+     ③占って欲しいキャラを選択<br>
+     ④プロンプト生成ボタンをクリックしてAIへのリーディング依頼プロンプトを生成します<br>
+     ⑤プロンプトコピーボタンをクリック<br>
+     ⑥好きなAIを起動しプロンプトを貼付け＆実行すると、選択したキャラが占い結果を読み解いてくれます
+    </small>
 </span>
 
 </div>
 
 <br>
 
-<button id="uranau">占う</button>
+<button id="uranau">①占う</button>
 <button id="reset">リセット</button>
 
 </div>
@@ -368,7 +373,7 @@ font-size: 0.85em;
 <div class="card-container" id="cardContainer">
 </div>
 
-<p style="margin: 15px 0 0; font-size: 0.9em;">占いたいテーマを選択</p>
+<p style="margin: 15px 0 0; font-size: 0.9em;">②占いたいテーマを選択</p>
 <select id="themeSelect">
     <option value="総合">総合運</option>
     <option value="仕事・キャリア">仕事・キャリア運</option>
@@ -377,14 +382,14 @@ font-size: 0.85em;
 </select>
 <br>
 
-<p style="margin: 15px 0 0; font-size: 0.9em;">占ってほしいキャラ</p>
+<p style="margin: 15px 0 0; font-size: 0.9em;">③占ってほしいキャラ</p>
 <select id="charaSelect">
-    <option value="高名なベテラン占い師">高名なベテラン占い師</option>
-    <option value="神秘を探求する大賢者">神秘を探求する大賢者</option>
-    <option value="毒舌スピリチュアル姐さん">毒舌スピリチュアル姐さん</option>
-    <option value="ゆるふわ占い好き女子">ゆるふわ占い好き女子</option>
-　　<option value="関西のおばちゃん">関西のおばちゃん</option>
-    <option value="闇の世界を支配する大魔王">闇の世界を支配する大魔王</option>
+    <option value="高名なベテラン占い師" data-first-person="私" data-second-person="あなた">高名なベテラン占い師</option>
+    <option value="神秘を探求する大賢者" data-first-person="わし" data-second-person="そなた">神秘を探求する大賢者</option>
+    <option value="毒舌スピリチュアル姐さん" data-first-person="アタイ" data-second-person="アンタ">毒舌スピリチュアル姐さん</option>
+    <option value="ゆるふわ占い僕っ子好き女子" data-first-person="ぼく" data-second-person="キミ">ゆるふわ占い好き僕っ子女子</option>
+　　<option value="関西のおばちゃん" data-first-person="おばちゃん" data-second-person="あんたぁ">関西のおばちゃん</option>
+    <option value="闇の世界を支配する大魔王" data-first-person="我" data-second-person="貴様">闇の世界を支配する大魔王</option>
 </select>
 <br>
 
@@ -401,21 +406,22 @@ font-size: 0.85em;
 
 <div class="prompt-container">
 <textarea id="promptOutput" readonly placeholder="ここにAIへのリーディング依頼プロンプトが表示されます..."></textarea>
-<button id="generatePrompt">AIへの依頼プロンプトを生成</button>
-<button id="copyPrompt" data-copy-text="">AIへの依頼プロンプトをコピー</button>
+<button id="generatePrompt">④AIへの依頼プロンプトを生成</button>
+<button id="copyPrompt" data-copy-text="">⑤AIへの依頼プロンプトをコピー</button>
 <br>
-<span>▶プロンプトをAIにコピペすることでAIにリーディングしてもらえますよ♪</span><br>
+<br>
+<span>▶⑥好きなAIを起動して、AIへの依頼プロンプトを貼付け＆実行してみましょう♪</span><br>
 </div>
 
 <br>
 
 <div style="margin: 0 auto; width: 50%; text-align: left;">
 <span>
-    <small>
-    《 免責事項 》<br>
-    このタロット占いアプリは、心のヒントや気付きを得るためのものであり、決して未来を断定するものではありません。<br>
-    あなた自身の選択や行動によって“運命”は変えられます。したがって、占い結果はあくまで参考として受け取ってくださいね。
-    </small>
+    <small>
+    《 免責事項 》<br>
+    このタロット占いアプリは、心のヒントや気付きを得るためのものであり、決して未来を断定するものではありません。<br>
+    あなた自身の選択や行動によって“運命”は変えられます。したがって、占い結果はあくまで参考として受け取ってくださいね。
+    </small>
 </span>
 </div>
 <br>
@@ -558,7 +564,7 @@ if (document.querySelectorAll(".card.flipped").length > 0) return;
 const shuffledCards = CARDS.sort(() => 0.5 - Math.random()).slice(0, POSITIONS.length);
 const cards = document.querySelectorAll(".card");
 resultTable.innerHTML = "";
-buttonsContainer.innerHTML = ""; 
+buttonsContainer.innerHTML = ""; 
 promptTextarea.value = ""; // ★変更: 占う時にプロンプトもクリア
 copyButton.dataset.copyText = ""; // ★変更: コピーボタンのデータもクリア
 
@@ -629,10 +635,10 @@ renderResultButtons(currentTheme);
 // リセット
 document.getElementById("reset").addEventListener("click", () => {
 resultTable.innerHTML = "";
-promptTextarea.value = ""; 
-buttonsContainer.innerHTML = ""; 
+promptTextarea.value = ""; 
+buttonsContainer.innerHTML = ""; 
 if (copyButton.dataset.copyText) {
-delete copyButton.dataset.copyText; 
+delete copyButton.dataset.copyText; 
 }
 
 // ★変更: グローバル変数をリセット
@@ -651,42 +657,52 @@ cardBack.innerHTML = '';
 });
 
 // ★★★★★
-// ★ NEW ★: プロンプト生成ボタンの処理 (テーマ・キャラをリアルタイム取得)
+// ★ JavaScriptの変更点 ★: プロンプト生成ボタンの処理
 // ★★★★★
 document.getElementById("generatePrompt").addEventListener("click", function() {
-    // 占いがまだ行われていない（結果がない）場合はアラート
-    if (currentResults.length === 0) {
-        alert("先に「占う」ボタンを押してください。");
-        return;
+    // 占いがまだ行われていない（結果がない）場合はアラート
+    if (currentResults.length === 0) {
+        alert("先に「占う」ボタンを押してください。");
+        return;
+    }
+
+    // ★修正点1: テーマを取得
+    const newTheme = themeSelect.value;
+    
+    // ★修正点2: キャラ選択要素(option)を取得
+    const selectedOption = charaSelect.options[charaSelect.selectedIndex];
+    
+    // ★修正点3: キャラ名と「一人称」・「二人称」を取得
+    const newChara = selectedOption.value; // 例: "闇の世界を支配する大魔王"
+    const firstPerson = selectedOption.dataset.firstPerson; // 例: "我"
+    const secondPerson = selectedOption.dataset.secondPerson; // 例: "貴様"
+    
+    // プロンプトを構築
+    let promptTextForAI = `あなたは占いがよく当たると評判の“${newChara}”です。\n以下のタロット占いの結果（テーマ: ${newTheme}）を詳細にリーディングしてください。\n\n---\n`;
+
+    currentResults.forEach(result => {
+        const position = result.position;
+        const cardName = result.cardName;
+        const direction = result.isReversed ? '(逆位置)' : '(正位置)';
+        const meaning = result.meaningText;
+        promptTextForAI += `・${position}: ${cardName} ${direction} (暗示キーワード: ${meaning})\n`;
+    });
+
+    promptTextForAI += `---
+以上の7枚のカード（ヘキサグラム・スプレッド）から、${newTheme}運勢について、流れと具体的なアドバイスを読み解き、優しく導いてください。`;
+    
+    // ★修正点4: 二人称の注意事項を追加
+    if (secondPerson) { // data-second-person が設定されている場合のみ
+        promptTextForAI += `\n\n※なお、この“${newChara}”は一人称で「${firstPerson}」、二人称で「${secondPerson}」を使います。`;
     }
 
-    // ★修正点1 & 2: ドロップダウンから現在のテーマとキャラを直接取得
-    const newTheme = themeSelect.value;
-    const newChara = charaSelect.value;
-    
-    // プロンプトを構築
-    // ★修正点3: プロンプト生成に newChara と newTheme を使用
-    let promptTextForAI = `あなたは占いがよく当たると評判の“${newChara}”です。\n以下のタロット占いの結果（テーマ: ${newTheme}）を詳細にリーディングしてください。\n\n---\n`;
+    // テキストエリアにプロンプトを表示
+    promptTextarea.value = promptTextForAI;
 
-    currentResults.forEach(result => {
-        const position = result.position;
-        const cardName = result.cardName;
-        const direction = result.isReversed ? '(逆位置)' : '(正位置)';
-        const meaning = result.meaningText;
-        promptTextForAI += `・${position}: ${cardName} ${direction} (暗示キーワード: ${meaning})\n`;
-    });
+    // コピーボタンにデータをセット
+    copyButton.dataset.copyText = promptTextForAI;
 
-    // ★修正点4: プロンプト生成に newTheme を使用
-    promptTextForAI += `---
-以上の7枚のカード（ヘキサグラム・スプレッド）から、${newTheme}運勢について、流れと具体的なアドバイスを読み解き、優しく導いてください。`;
-
-    // テキストエリアにプロンプトを表示
-    promptTextarea.value = promptTextForAI;
-
-    // コピーボタンにデータをセット
-    copyButton.dataset.copyText = promptTextForAI;
-
-    alert("AIへの依頼プロンプトを生成します。\n生成されたプロンプトをあなたの好きなAIにコピペしてみましょう。\nAIが占い結果についてフィードバックしてくれます。");
+    alert("AIへの依頼プロンプトを生成します。\n生成されたプロンプトをあなたの好きなAIにコピペしてみましょう。\nAIが占い結果についてフィードバックしてくれます。");
 });
 
 
@@ -713,7 +729,7 @@ console.error('Failed to copy: ', err);
 try {
 const textArea = document.createElement("textarea");
 textArea.value = textToCopy;
-textArea.style.position = "fixed"; 
+textArea.style.position = "fixed"; 
 textArea.style.opacity = "0";
 document.body.appendChild(textArea);
 textArea.select();
