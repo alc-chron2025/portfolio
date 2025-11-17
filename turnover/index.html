@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>離職コスト見積り簡易計算</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+padding: 20px;
+background: #f0f8ff;
+}
+h2 { text-align: center; }
+#chatArea {
+background: #fff;
+padding: 15px;
+border-radius: 8px;
+max-width: 540px;
+margin: 0 auto 20px;
+display: flex;
+flex-direction: column;
+gap: 8px;
+box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.bot, .user {
+padding: 10px;
+border-radius: 8px;
+max-width: 80%;
+}
+.bot {
+background: #e0f7fa;
+align-self: flex-start;
+}
+.bot button {
+display: block;
+margin: 0 auto;
+}
+.user {
+background: #c6ff84;
+align-self: flex-end;
+text-align: right;
+}
+#inputArea {
+max-width: 540px;
+margin: 0 auto;
+display: flex;
+justify-content: center;
+align-items: center;
+gap: 6px;
+}
+input {
+text-align: right;
+padding: 6px;
+border: 1px solid #ccc;
+border-radius: 4px;
+width: 85px;
+}
+#inputUnit {
+min-width: 40px;
+text-align: left;
+}
+#maturitySlider[type=range] { width: 280px; padding: 0; font-size: 14px; text-align: center; }
+button {
+padding: 6px 16px;
+font-size: 13px;
+cursor: pointer;
+border-radius: 6px;
+border: none;
+background: #1976d2;
+color: white;
+}
+.choice-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+#impactButtons {
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 10px;
+justify-content: center;
+margin-top: 8px;
+max-width: 300px;
+margin-left: auto;
+margin-right: auto;
+}
+#impactButtons button { width: 132px; text-align: center; }
+.slider-container { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+#result { max-width: 540px; margin: 20px auto; font-weight: 600; white-space: pre-line; text-align: center; background: #fff; padding: 16px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); display: none; }
+#result strong { display: block; color: #160171; font-size: 24px; margin-top: 12px; }
+canvas { display: block; margin: 12px auto; max-width: 360px; max-height: 360px; background: #fff; border-radius: 8px; }
+
+/* 計算ボタン表示用 */
+#calc-button-area { display:none; text-align:center; margin-top:10px; }
+
+/* 共通ボタン */
+.action-btn {
+display: block;
+min-width: 280px;
+margin: 6px 0;
+padding: 10px 20px;
+border-radius: 8px;
+text-decoration: none;
+text-align: center;
+cursor: pointer;
+font-weight: bold;
+}
+
+/* Xシェア */
+.share-btn { background-color: #1DA1F2; color:#fff; border:none; }
+.share-btn:hover { background-color: #0d8ddb; }
+.share-btn a {
+display: inline-block;
+background-color: #1da1f2;
+border: 0.5px solid #6600ff;
+color: #fff;
+padding: 10px 20px;
+border-radius: 8px;
+text-decoration: none;
+font-weight: bold;
+width: 320px;
+}
+
+/* 再計算 */
+.ghost { background-color:#333; color:#fff; border:none; width: 320px;}
+.ghost:hover { background-color:#000; }
+
+/* noteプロフィール */
+.note-btn { background-color:#f5f5f5; color:#000; border:1px solid #666; width: 320px;}
+.note-btn:hover { background-color:#eaeaea; }
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<h2>離職コストの簡易見積計算</h2>
+
+<div id="chatArea">
+<div class="bot">
+こんにちは！<br><br>
+このアプリではLINE風の質問対話によって、*1人あたり*の離職コストを『見える化』することができます。<br><br>
+所要時間は 6分程度 です。<br><br>
+<button id="startBtn">見積計算を開始する</button>
+</div>
+</div>
+
+<div id="inputArea" style="display:none;">
+<input type="number" id="userInput" placeholder="ここに入力…" min="0" />
+<span id="inputUnit"></span>
+<button onclick="nextStep()">送 信</button>
+</div>
+
+<div id="calc-button-area">
+<button id="calc-button">計算する</button>
+</div>
+
+<div id="result"></div>
+<canvas id="costChart" style="display:none;"></canvas>
+
+<div id="buttonsContainer" style="display:none; justify-content: center;">
+<div id="result-buttons" style="display:flex; flex-direction:column; align-items:center; gap:10px; margin-top:20px;">
+</div>
+</div>
+
+
+<script>
+let step = 0;
+let data = {};
+let singlePerson = true; // 常に1人計算
+let chart = null;
+const chatArea = document.getElementById('chatArea');
+const inputArea = document.getElementById('inputArea');
+const userInput = document.getElementById('userInput');
+const inputUnit = document.getElementById('inputUnit');
+const buttonsContainer0 = document.getElementById("buttonsContainer"); //HTML側に要素を用意しておく
+
+
+// スムーズスクロール関数
+function scrollToBottomSmooth() {
+// 新しい要素が DOM に反映されるのを待ってからスクロール（レンダリング完了を見越す）
+setTimeout(() => {
+try {
+// 要素自体がスクロール可能ならその要素をスムーズスクロール
+if (chatArea.scrollHeight > chatArea.clientHeight) {
+chatArea.scrollTo({ top: chatArea.scrollHeight, behavior: 'smooth' });
+} else {
+// そうでなければページ全体を下までスムーズスクロール
+window.scrollTo({ top: document.documentElement.scrollHeight || document.body.scrollHeight, behavior: 'smooth' });
+}
+} catch (e) {
+// 万一エラーが出たらフォールバックで瞬時にスクロール
+window.scrollTo(0, document.documentElement.scrollHeight || document.body.scrollHeight);
+}
+}, 50); // 50ms 後に実行（0 でも良いが少し遅らせた方が安定）
+}
+
+
+document.getElementById('startBtn').addEventListener('click', () => {
+chatArea.innerHTML = '';
+showLeaveTypeQuestion();
+});
+
+userInput.addEventListener('keydown', function(e) {
+if (e.key === 'Enter') nextStep();
+});
+
+function showLeaveTypeQuestion() {
+appendBotBubble(`
+①まず最初に、対象者の離職の区分はどちらに該当しますか？<br><br>
+▶ 予見外離職…自主退職など予見できなかった離職<br><br>
+▷ 予見内離職…定年退職、契約期間満了など予見することができた離職<br><br>
+<div class="choice-buttons" style="margin-top:8px;">
+<button onclick="selectLeaveType(1)">予見外（自主退職など）</button>
+<button onclick="selectLeaveType(2)">予見内（定年退職など）</button>
+</div><br>
+`);
+}
+
+function selectLeaveType(type){
+appendUserBubble(type === 1 ? '予見外' : '予見内');
+const buttons = document.querySelectorAll('.choice-buttons button');
+buttons.forEach(btn => { btn.disabled = true; btn.style.opacity='0.6'; btn.style.cursor='not-allowed'; });
+const selected = buttons[type===1?0:1];
+selected.style.backgroundColor='#1976d2';
+selected.style.color='#fff';
+selected.style.fontWeight='bold';
+
+if(type===2){
+appendBotBubble('この診断は予見外離職向けです。予見内離職は計算対象外です。');
+appendBotBubble('<div class="choice-buttons"><button onclick="restart()">最初に戻る</button></div>');
+return;
+}
+
+// 離職者数を聞くステップ(step 1)をスキップし、1人に固定する
+data.leavers = 1; 
+singlePerson = true;
+
+step=2; // 新しいフローでは在籍期間がStep 2
+inputArea.style.display='flex';
+userInput.placeholder='例: 12';
+inputUnit.textContent='ヶ月';
+appendBotBubble('②では次に、対象離職者が在籍していた期間（月数）を教えてください。');
+}
+
+function restart(){
+data={}; step=0; singlePerson=true;
+if(chart) chart.destroy(); chart=null;
+chatArea.innerHTML=`<div class="bot">
+こんにちは！<br><br>
+このアプリではLINE風の質問対話によって、*1人あたり*の離職コストを『見える化』することができます。<br><br>
+所要時間は 6分程度 です。<br><br>
+<button id="startBtn">見積計算を開始する</button>
+</div>`;
+document.getElementById('startBtn').addEventListener('click', () => {
+chatArea.innerHTML = '';
+showLeaveTypeQuestion();
+});
+document.getElementById('result').innerHTML='';
+document.getElementById('costChart').style.display='none';
+document.getElementById('calc-button-area').style.display='none';
+inputArea.style.display='none';
+userInput.value='';
+}
+
+
+function nextStep() {
+const raw = userInput.value;
+if (!raw) return;
+const input = raw.trim();
+const nValue = Number(input);
+if (!Number.isFinite(nValue)) return;
+
+// ステップごとの単位設定
+let unit = '';
+if (step === 2) unit = 'ヶ月';
+else if (step === 3 || step === 5) unit = '万円';
+else if (step === 6 || step === 8) unit = '時間';
+else if (step === 7 || step === 9) unit = '円';
+
+// チャットには単位付きで表示
+let displayValue = input;
+if(step === 7 || step === 9){
+displayValue = '＠' + input + ' ' + unit;
+} else {
+displayValue += ' ' + unit;
+}
+
+appendUserBubble(displayValue);
+
+// 入力欄横の単位表示更新
+if (step === 2) inputUnit.textContent = '万円';
+else if (step === 3) inputUnit.textContent = '';
+else if (step === 5) inputUnit.textContent = '時間';
+else if (step === 6) inputUnit.textContent = '円';
+else if (step === 7) inputUnit.textContent = '時間';
+else if (step === 8) inputUnit.textContent = '円';
+else if (step === 9) inputUnit.textContent = '';
+
+// 入力値リセット
+userInput.value = '';
+
+// Step 2 (在籍期間) -> Step 3
+if (step === 2) {
+if (nValue <= 0) { appendBotBubble('在籍期間は1以上の数値を入力してください。'); return; }
+data.months = nValue;
+appendBotBubble(`③続けて、対象離職者の在籍期間における総人件費（給与・賞与・社保合計）を教えてください。【万円】`);
+userInput.placeholder='例: 500';
+step = 3;
+return;
+}
+
+// Step 3 (総人件費) -> Step 4 (Slider)
+if (step === 3) {
+if (nValue < 0) { appendBotBubble('0以上の数値を入力してください。'); return; }
+data.totalComp = nValue;
+showMaturitySlider();
+return;
+}
+
+// Step 5 (求人広告費用) -> Step 6
+if (step === 5) {
+if (nValue < 0) { appendBotBubble('0以上の数値を入力してください。'); return; }
+data.recruitCost = nValue;
+appendBotBubble('⑥採用過程（書類選考・面接・準備その他）にかかった概算時間数を教えてください。【時間】');
+userInput.placeholder='例: 5';
+step = 6;
+return;
+}
+
+// Step 6 (採用時間) -> Step 7
+if (step === 6) {
+if (nValue < 0) { appendBotBubble('0以上の数値を入力してください。'); return; }
+data.interviewHours = nValue;
+appendBotBubble('⑦採用過程（書類選考・面接・準備その他）の1時間あたりの概算コストを教えてください。【単位時間コスト：円】');
+userInput.placeholder='例: 3000';
+step = 7;
+return;
+}
+
+// Step 7 (採用コスト) -> Step 8
+if (step === 7) {
+if (nValue < 0) { appendBotBubble('0以上の数値を入力してください。'); return; }
+data.interviewRate = nValue;
+appendBotBubble('⑧採用後の育成にかかった概算時間数を教えてください。【時間】');
+userInput.placeholder='例: 160';
+step = 8;
+return;
+}
+
+// Step 8 (育成時間) -> Step 9
+if (step === 8) {
+if (nValue < 0) { appendBotBubble('0以上の数値を入力してください。'); return; }
+data.trainingHours = nValue;
+appendBotBubble('⑨採用後の育成の1時間あたりの概算コストを教えてください。【単位時間コスト：円】');
+userInput.placeholder='例: 2500';
+step = 9;
+return;
+}
+
+// Step 9 (育成コスト) -> Step 10 (Buttons)
+if (step === 9) {
+if (nValue < 0) { appendBotBubble('0以上の数値を入力してください。'); return; }
+data.trainingRate = nValue;
+inputArea.style.display = 'none';
+showImpactButtons();
+return;
+}
+}
+
+function showMaturitySlider(){
+step=4; inputArea.style.display='none';
+if(document.getElementById('maturityBlock')) return;
+const block=document.createElement('div');
+block.className='bot'; block.id='maturityBlock';
+block.innerHTML=`
+④対象離職者の業務習熟度は、離職時点においてどれくらいだったでしょうか？<br>※スライダーを動かして設定してください。
+<div class="slider-container">
+<input type="range" id="maturitySlider" min="0" max="100" step="1" value="0" />
+<span id="maturityValue">0%</span>
+</div>
+<div style="margin-top:8px;"><button id="maturityConfirmBtn" class="small">決 定</button></div>
+`;
+chatArea.appendChild(block);
+
+const slider=document.getElementById('maturitySlider');
+const valueSpan=document.getElementById('maturityValue');
+slider.addEventListener('input',()=>{valueSpan.textContent=slider.value+'%';});
+document.getElementById('maturityConfirmBtn').addEventListener('click',()=>{confirmMaturity();});
+}
+
+function confirmMaturity(){
+const slider=document.getElementById('maturitySlider');
+const confirmBtn=document.getElementById('maturityConfirmBtn');
+if(!slider||!confirmBtn) return;
+data.maturity=Number(slider.value)/100;
+appendUserBubble(slider.value+'%');
+slider.disabled=true; slider.style.opacity='0.5';
+confirmBtn.disabled=true; confirmBtn.style.opacity='0.5'; confirmBtn.style.cursor='not-allowed';
+inputArea.style.display='flex';
+appendBotBubble('⑤では次に、採用にあたっての求人広告費用を教えてください。【万円】');
+userInput.placeholder='例: 10'; inputUnit.textContent='万円';
+step=5;
+}
+
+function showImpactButtons(){
+appendBotBubble('⑩最後に、対象離職者の離職が及ぼした周囲・職場への影響（業務負担増や士気低下）はどの程度ありましたか？<br><strong>※間接コストを計算する上でのインパクトファクター</strong>');
+const container=document.createElement('div');
+container.className='choice-buttons'; container.id='impactButtons';
+container.innerHTML=`
+<button data-val="0">ほぼ支障なし</button>
+<button data-val="0.15">少し支障あり</button>
+<button data-val="0.25">中程度支障あり</button>
+<button data-val="0.45">大きく支障あり</button>
+<button data-val="0.65">深刻な支障あり</button>
+<button data-val="0.95">危機的機能不全</button>
+`;
+chatArea.appendChild(container);
+
+container.querySelectorAll('button').forEach(btn=>{
+btn.addEventListener('click',()=>{
+const v=Number(btn.getAttribute('data-val'));
+const label=btn.textContent;
+appendUserBubble(label);
+data.impactFactor=v;
+container.querySelectorAll('button').forEach(b=>{b.disabled=true; b.style.opacity='0.6'; b.style.cursor='not-allowed';});
+btn.style.backgroundColor='#1976d2'; btn.style.color='#fff'; btn.style.fontWeight='bold';
+
+inputArea.style.display='none';
+document.getElementById("calc-button-area").style.display = "block";
+appendBotBubble('すべての入力が完了しました。「計算する」ボタンを押してください。');
+});
+});
+}
+
+// 計算ボタン押下で結果表示
+document.getElementById("calc-button").addEventListener("click", function() {
+document.getElementById("calc-button-area").style.display = "none";
+buttonsContainer0.style.display = 'flex';
+//buttonsContainer0.style.margin = '0 auto';
+finishInput();
+});
+
+function finishInput(){
+scrollToBottomSmooth();
+const resultArea=document.getElementById('result'); resultArea.style.display='block';
+
+// 離職者数入力を削除したため、1人として計算を続行
+const leaversCount = 1;
+
+const compYen=(data.totalComp||0)*10000;
+const adjustedComp=compYen*(1-(data.maturity||0));
+const recruitYen=(data.recruitCost||0)*10000;
+const interviewYen=(data.interviewHours||0)*(data.interviewRate||0);
+const hiringTotal=recruitYen+interviewYen;
+const trainingTotal=(data.trainingHours||0)*(data.trainingRate||0);
+const directPerPerson=adjustedComp+hiringTotal+trainingTotal;
+const indirectPerPerson=directPerPerson*(data.impactFactor||0);
+const totalPerPerson=directPerPerson+indirectPerPerson;
+const totalCost=totalPerPerson * leaversCount; // 1人分なので totalCost = totalPerPerson
+
+resultArea.innerHTML=
+`<strong>《 結 果 》</strong>\n\n`+
+`*離職コスト見積の内訳*\n\n`+
+`給与コスト (未習熟度分): ${Math.round(adjustedComp).toLocaleString()} 円\n`+
+`採用コスト (広告・選考): ${Math.round(hiringTotal).toLocaleString()} 円\n`+
+`育成コスト (教育・研修): ${Math.round(trainingTotal).toLocaleString()} 円\n\n`+
+`直接コスト合計: ${Math.round(directPerPerson).toLocaleString()} 円\n`+
+`間接コスト: ${Math.round(indirectPerPerson).toLocaleString()} 円\n\n`+
+`*離職コスト見積合計額*\n*${Math.round(totalPerPerson).toLocaleString()} 円*\n\n\n`+
+`<p style="text-align: left;">※間接コストについては、対象離職者の離職が及ぼした周囲・職場への影響（業務負担増や士気低下）の程度をインパクトファクターとして直接コストに上乗せしています。</p>`;
+
+
+setTimeout(() => {
+
+document.getElementById('costChart').style.display='block';
+const ctx=document.getElementById('costChart').getContext('2d');
+if(chart) chart.destroy();
+chart=new Chart(ctx,{
+type:'bar',
+data:{
+labels:['離職コスト見積合計額(単位：円)'],
+datasets:[
+// 1人あたりとして計算
+{label:'給与コスト', data:[Math.round(adjustedComp)], backgroundColor:'rgba(54,102,235,0.8)'},
+{label:'育成コスト', data:[Math.round(trainingTotal)], backgroundColor:'rgba(75,192,75,0.8)'},
+{label:'採用コスト', data:[Math.round(hiringTotal)], backgroundColor:'rgba(255,159,64,0.8)'},
+{label:'間接コスト', data:[Math.round(indirectPerPerson)], backgroundColor:'rgba(255,99,99,0.8)'}
+]
+},
+options:{
+responsive:true,
+maintainAspectRatio:false,
+plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:20,font:{size:14},padding:8}},
+title:{display:true,text:'離職コスト見積合計額',color:'#222',font:{size:18},padding:{top:20,bottom:20}}},
+scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}
+}
+});
+},60)
+}
+
+function appendBotBubble(text){
+const div=document.createElement('div'); div.className='bot'; div.innerHTML=text;
+chatArea.appendChild(div); chatArea.scrollTop=chatArea.scrollHeight;
+scrollToBottomSmooth();
+}
+
+function appendUserBubble(text){
+const div=document.createElement('div'); div.className='user'; div.textContent=text;
+chatArea.appendChild(div); chatArea.scrollTop=chatArea.scrollHeight;
+scrollToBottomSmooth();
+}
+
+
+// 共通ボタン作成関数
+const createButton = (tag, contentHtml, className, onClickOrHref) => {
+const isLink = tag === "a";
+const el = document.createElement(isLink ? "a" : "button");
+el.className = `action-btn ${className || ""}`;
+if (isLink) {
+el.href = onClickOrHref || "#";
+el.target = "_blank";
+el.rel = "noopener noreferrer";
+el.innerHTML = contentHtml;
+} else {
+el.type = "button";
+el.innerHTML = contentHtml;
+if (typeof onClickOrHref === "function") el.addEventListener("click", onClickOrHref);
+}
+return el;
+};
+
+// ① Xシェアボタン
+const shareBtn = createButton(
+"a",
+"Xでシェアする",
+"share-btn",
+createShareLink()
+);
+
+// ② 再計算ボタン
+const retryBtn = createButton(
+"button",
+"最初の画面へ戻る",
+"ghost",
+() => location.reload()
+);
+
+// ③ noteプロフィールボタン
+const noteBtn = createButton(
+"a",
+"この診断を作った人はこちら<br>（noteプロフィールへ）",
+"note-btn",
+"https://note.com/alc_chron2025"
+);
+
+const buttonsContainer = document.getElementById("result-buttons");
+
+// 縦に並べて追加
+buttonsContainer.style.display = 'flex';
+buttonsContainer.style.flexDirection = 'column';
+buttonsContainer.style.alignItems = 'center';
+buttonsContainer.style.gap = '10px';
+
+
+buttonsContainer.appendChild(shareBtn);
+buttonsContainer.appendChild(retryBtn);
+buttonsContainer.appendChild(noteBtn);
+
+
+// ================================
+// Xシェアリンク
+// ================================
+function createShareLink() {
+const text = `離職コスト簡易見積計算`;
+return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+}
+
+
+</script>
+</body>
+</html>
