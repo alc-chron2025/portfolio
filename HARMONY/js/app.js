@@ -1355,7 +1355,7 @@ function init() {
     //質問のデータベース（オブジェクトの配列）
         const Question = [
 
-            {id_no: "MPB-005"
+            {id_no: "HAM-005"
             ,harmony_H: ""
             ,harmony_A: "〇"
             ,harmony_R: ""
@@ -1366,7 +1366,7 @@ function init() {
             ,shitumonbun: "同僚やチームと働くことで、仕事がより<br>楽しいと感じることができる"
             },
 
-            {id_no: "MPB-010"
+            {id_no: "HAM-010"
             ,harmony_H: ""
             ,harmony_A: "〇"
             ,harmony_R: "〇"
@@ -1377,7 +1377,7 @@ function init() {
             ,shitumonbun: "失敗や批判を恐れずに安心して自分のスキルや<br>能力を磨く挑戦ができる環境だと感じる"
             },
 
-            {id_no: "MPB-013"
+            {id_no: "HAM-013"
             ,harmony_H: "◎"
             ,harmony_A: ""
             ,harmony_R: ""
@@ -1388,7 +1388,7 @@ function init() {
             ,shitumonbun: "業務の裁量が自分にありつつも、上司や同僚から<br>適切なサポートを受けられるバランスもある"
             },
 
-            {id_no: "MPB-014"
+            {id_no: "HAM-014"
             ,harmony_H: ""
             ,harmony_A: "〇"
             ,harmony_R: "〇"
@@ -1399,7 +1399,7 @@ function init() {
             ,shitumonbun: "業務の進め方について自由に選択できる<br>環境があり、その選択が尊重されている"
             },
 
-            {id_no: "MPB-015"
+            {id_no: "HAM-015"
             ,harmony_H: ""
             ,harmony_A: "〇"
             ,harmony_R: "◎"
@@ -1410,7 +1410,7 @@ function init() {
             ,shitumonbun: "上司とのコミュニケーションを通じて、<br>信頼関係が築けている"
             },
 
-            {id_no: "MPB-016"
+            {id_no: "HAM-016"
             ,harmony_H: "〇"
             ,harmony_A: "◎"
             ,harmony_R: "〇"
@@ -1421,7 +1421,7 @@ function init() {
             ,shitumonbun: "職場で、上司に対して自由に意見を<br>言える雰囲気があると感じる"
             },
 
-            {id_no: "MPB-017"
+            {id_no: "HAM-017"
             ,harmony_H: ""
             ,harmony_A: "〇"
             ,harmony_R: "◎"
@@ -1432,7 +1432,7 @@ function init() {
             ,shitumonbun: "上司の判断や行動は、公正で信頼できる"
             },
 
-            {id_no: "MPB-018"
+            {id_no: "HAM-018"
             ,harmony_H: ""
             ,harmony_A: "◎"
             ,harmony_R: "〇"
@@ -1443,7 +1443,7 @@ function init() {
             ,shitumonbun: "あなたの個性や意見が、上司に受け入れ<br>られていると感じる"
             },
 
-            {id_no: "MPB-019"
+            {id_no: "HAM-019"
             ,harmony_H: ""
             ,harmony_A: "◎"
             ,harmony_R: "〇"
@@ -1454,7 +1454,7 @@ function init() {
             ,shitumonbun: "上司はあなたの意見や提案に耳を<br>傾けていると感じる"
             },
 
-            {id_no: "MPB-020"
+            {id_no: "HAM-020"
             ,harmony_H: ""
             ,harmony_A: "〇"
             ,harmony_R: "〇"
@@ -1465,7 +1465,7 @@ function init() {
             ,shitumonbun: "業務上のミスについて、上司は批判ではなく<br>建設的なフィードバックを行ってくれる"
             },
 
-            {id_no: "MPB-021"
+            {id_no: "HAM-021"
             ,harmony_H: ""
             ,harmony_A: "〇"
             ,harmony_R: "〇"
@@ -1476,7 +1476,7 @@ function init() {
             ,shitumonbun: "同僚同士で、失敗や課題について批判される<br>ことを気にせずにオープンに話し合える"
             },
 
-            {id_no: "MPB-022"
+            {id_no: "HAM-022"
             ,harmony_H: ""
             ,harmony_A: "◎"
             ,harmony_R: "〇"
@@ -1487,7 +1487,7 @@ function init() {
             ,shitumonbun: "同僚との会話で、自分の考えや感情を<br>素直に伝えられる雰囲気がある"
             },
 
-            {id_no: "MPB-023"
+            {id_no: "HAM-023"
             ,harmony_H: ""
             ,harmony_A: "◎"
             ,harmony_R: ""
@@ -1498,7 +1498,7 @@ function init() {
             ,shitumonbun: "あなたの意見や提案が、同僚に対して<br>尊重されていると感じる"
             },
 
-            {id_no: "MPB-024"
+            {id_no: "HAM-024"
             ,harmony_H: ""
             ,harmony_A: ""
             ,harmony_R: "◎"
@@ -1509,7 +1509,7 @@ function init() {
             ,shitumonbun: "仕事において、同僚に信頼されているという実感がある"
             },
 
-            {id_no: "MPB-043"
+            {id_no: "HAM-043"
             ,harmony_H: "◎"
             ,harmony_A: ""
             ,harmony_R: "〇"
@@ -1522,7 +1522,3 @@ function init() {
 
         ];
 
-/*
-    //★Question配列の中の順番をシャッフル★//////////////////////////////////////////////////////////////////////////////////
-    Question.sort( () => Math.random() - 0.5 ); //Question配列内の順番をシャッフル　※この一行で事足りるらしい・・・
-*/
