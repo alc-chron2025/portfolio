@@ -421,7 +421,8 @@ width: 180px;
 }
 
 #harmony_table td:nth-child(4) {
-width: 120px;
+width: 80px;
+text-align: right;
 }
 
 #harmony_table td:nth-child(5) {
@@ -430,8 +431,7 @@ text-align: right;
 }
 
 #harmony_table td:nth-child(2),
-#harmony_table td:nth-child(3),
-#harmony_table td:nth-child(4) {
+#harmony_table td:nth-child(3){
 text-align: left;
 }
 
@@ -526,5 +526,6 @@ margin: 15px auto; /* スマホでは上下の余白も少し減らす */
 font-size: 14px; /* 親の .explain のフォントサイズを継承（明示的に指定） */
 text-align: left;
 }
+
 
 }
