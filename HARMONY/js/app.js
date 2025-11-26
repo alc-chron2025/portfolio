@@ -1039,8 +1039,8 @@ jQuery(document).on("click", "#graph_go", async function() {
       { label1: 'R', label2: '信頼する', label3: '基本姿勢', value: scores.value_R },
       { label1: 'A', label2: '受容する', label3: '基本姿勢', value: scores.value_A },
       { label1: 'N', label2: '成長を促す', label3: '組織文化', value: scores.value_N },
-      { label1: 'O', label2: '自走しやすい', label3: '組織文化', value: scores.value_O },
-      { label1: 'M', label2: '相互理解する', label3: '組織文化', value: scores.value_M },
+      { label1: 'O', label2: '自走する', label3: '組織文化', value: scores.value_O },
+      { label1: 'M', label2: '相互理解の', label3: '組織文化', value: scores.value_M },
       { label1: 'Y', label2: 'Your', label3: 'Presence', value: scores.value_Y }
     ];
 
@@ -1132,8 +1132,8 @@ function generateCircleData(scores) {
     { label1: 'R', label2: '信頼する', label3: '基本姿勢', value: scores.value_R },
     { label1: 'A', label2: '受容する', label3: '基本姿勢', value: scores.value_A },
     { label1: 'N', label2: '成長を促す', label3: '組織文化', value: scores.value_N },
-    { label1: 'O', label2: '自走しやすい', label3: '組織文化', value: scores.value_O },
-    { label1: 'M', label2: '相互理解する', label3: '組織文化', value: scores.value_M },
+    { label1: 'O', label2: '自走する', label3: '組織文化', value: scores.value_O },
+    { label1: 'M', label2: '相互理解の', label3: '組織文化', value: scores.value_M },
     { label1: 'Y', label2: 'Your', label3: 'Presence', value: scores.value_Y }
   ];
 }
@@ -1521,5 +1521,6 @@ function init() {
             },
 
         ];
+
 
 
