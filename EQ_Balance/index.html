@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EQ診断アプリ</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+/* =====================
+      共通スタイル 
+  ===================== */
+body {
+font-family: "Hiragino Sans", "Arial", sans-serif;
+background: #f0f4f8;
+padding: 20px;
+text-align: center;
+color: #333;
+}
+#Screen {
+max-width: 600px;
+margin: 0 auto;
+background: #fff;
+border-radius: 16px;
+box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+padding: 30px;
+}
+h2 { color: #007bff; margin-bottom: 20px; }
+
+ul, ol {
+list-style: none;
+padding-left: 0;
+margin: 0;
+}
+
+#startBtn {
+background: linear-gradient(135deg, #007bff, #0056b3);
+color: #fff;
+padding: 15px 40px;
+font-size: 18px;
+font-weight: bold;
+border: none;
+border-radius: 30px;
+cursor: pointer;
+transition: transform 0.2s, box-shadow 0.2s;
+}
+#startBtn:hover {
+transform: translateY(-2px);
+box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+}
+
+/* 質問エリア */
+.status {
+font-size: 18px;
+margin-bottom: 24px;
+font-weight: bold;
+min-height: 60px;
+display: flex;
+align-items: center;
+justify-content: center;
+text-align: left;
+padding: 0 10px;
+}
+.likert-container {
+display: flex;
+flex-direction: column;
+align-items: center;
+width: 100%;
+margin: 20px auto;
+}
+.circles {
+display: grid;
+grid-template-columns: repeat(7, 1fr);
+justify-items: center;
+align-items: center;
+gap: 8px;
+margin-bottom: 10px;
+}
+.labels {
+display: flex;
+justify-content: space-between;
+width: 100%;
+max-width: 320px;
+font-size: 12px;
+color: #666;
+}
+
+/* 円ボタン */
+input[type="radio"] {
+display: none !important;
+visibility: hidden;
+}
+.circle {
+display: flex;
+justify-content: center;
+align-items: center;
+border-radius: 50%;
+cursor: pointer;
+transition: all 0.2s;
+background-color: white;
+border: 2px solid #ccc;
+}
+.size0 { width: 40px; height: 40px; }
+.size1 { width: 34px; height: 34px; }
+.size2 { width: 28px; height: 28px; }
+.size3 { width: 24px; height: 24px; }
+
+/* 色付け（選択前）*/
+input[id$="_0"] + .circle { border-color: #f63f2a; color: #f63f2a; }
+input[id$="_1"] + .circle { border-color: #fd6f03; color: #fd6d03; }
+input[id$="_2"] + .circle { border-color: #ffcc01; color: #ffcc01; }
+input[id$="_3"] + .circle { border-color: #fff700; color: #fff70083; }
+input[id$="_4"] + .circle { border-color: #bffa10; color: #bffa10; }
+input[id$="_5"] + .circle { border-color: #96f522; color: #55db1b; }
+input[id$="_6"] + .circle { border-color: #07e061; color: #07e061; }
+/* 選択時 */
+input[type="radio"]:checked + .circle {
+background-color: currentColor;
+border-color: currentColor;
+box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
+/* ナビゲーション */
+.progress { margin-top: 20px; font-size: 14px; color: #888; }
+#prevBtn, #nextBtn {
+margin: 20px 10px;
+padding: 10px 25px;
+font-size: 16px;
+border: none;
+border-radius: 8px;
+cursor: pointer;
+font-weight: bold;
+}
+#nextBtn { background-color: #007bff; color: white; }
+#prevBtn { background-color: #e0e0e0; color: #555; }
+
+/* 結果画面 */
+.result-section {
+margin-bottom: 25px;
+padding: 15px;
+background: #f9f9f9;
+border-radius: 8px;
+text-align: left;
+}
+.result-section h3 {
+text-align: center;
+margin-bottom: 10px;
+}
+.result-section p {
+text-align: center;
+}
+.type-box {
+margin-top: 15px;
+padding: 15px;
+border-radius: 8px;
+text-align: center;
+border: 2px solid;
+}
+.type-title {
+font-size: 1.5em;
+font-weight: bold;
+}
+
+.action-btn {
+display: block;
+width: 100%;
+max-width: 300px;
+margin: 10px auto;
+padding: 12px;
+border-radius: 30px;
+text-align: center;
+text-decoration: none;
+font-weight: bold;
+cursor: pointer;
+box-sizing: border-box;
+}
+
+/* ボタンの色設定 */
+.share-btn { background-color: #000; color: #fff; }
+.ghost { background-color: transparent; border: 2px solid #007bff; color: #007bff; }
+.ghost:hover { background-color: #eef7ff; }
+.note-btn {
+background-color: #ddd;
+border: 1px solid #999;
+color: #333;
+font-weight: normal;
+}
+.note-btn:hover { background-color: #efefef; }
+
+/* グラフエリア調整 */
+#charts-area canvas {
+max-height: 300px;
+}
+#matrix-area {
+margin: 20px auto;
+max-width: 450px;
+}
+#matrixChart {
+/* 正方形を担保し、かつmax-widthを超えないようにする */
+aspect-ratio: 1 / 1;
+height: auto !important;
+}
+
+
+@media (max-width: 480px) {
+.size0 { width: 32px; height: 32px; }
+.size1 { width: 28px; height: 28px; }
+.size2 { width: 24px; height: 24px; }
+.size3 { width: 20px; height: 20px; }
+.labels { max-width: 260px; }
+}
+</style>
+</head>
+<body>
+
+<div id="Screen">
+
+<div id="startScreen">
+<h2>EQ診断</h2>
+<p>あなたのEQ（心の知能指数）を<br>
+5つの領域で分析・スコア化し、<br>
+レーダーチャートで表示します。</p>
+
+<ul style="text-align:left; display:inline-block; font-size:0.9em; color:#555;">
+<li>・自己認識</li>
+<li>・自己管理</li>
+<li>・モチベーション</li>
+<li>・共感</li>
+<li>・社会的スキル</li>
+</ul>
+
+<p>さらに「タスク志向」と<br>
+「関係性志向」の結果を<br>
+マトリクスで表示します。</p>
+<br><br>
+<button id="startBtn">診断をスタート</button>
+</div>
+
+<div id="questionScreen" style="display: none;">
+<div class="progress" id="progress">1 / 25</div>
+<div class="status" id="questionText"></div>
+<div class="likert-container">
+<div class="circles" id="choices"></div>
+<div class="labels">
+<span>◀ そう思わない</span>
+<span>そう思う ▶</span>
+</div>
+</div>
+<div>
+<button id="prevBtn">戻る</button>
+<button id="nextBtn">次へ</button>
+</div>
+</div>
+
+<div id="result-container" style="display:none; padding-bottom: 30px;">
+<h2>EQ診断の結果</h2>
+<div id="charts-area"></div>
+
+<div id="chara-area"></div>
+<hr style="margin: 30px 0;">
+
+<div id="analysis-area"></div>
+<div id="matrix-area" style="width: 90%; max-width: 450px; margin: 20px auto;">
+<canvas id="matrixChart"></canvas>
+</div>
+
+<div id="matrix-chara-area"></div>
+
+<div id="result-buttons"></div>
+</div>
+
+</div>
+
+<script>
+/* =====================
+   0. 設定
+===================== */
+const questions = [
+// A: 自己認識
+{ id:1, ability:"A", text:"自分の感情が変化したとき、その理由をすぐに理解できる", answer:null },
+{ id:2, ability:"A", text:"自分が今、ストレスを感じているかどうかを正確に把握できる", answer:null },
+{ id:3, ability:"A", text:"自分の強みと、能力の限界（弱み）を客観的に知っている", answer:null },
+{ id:4, ability:"A", text:"感情的になりそうな時、自分自身で「今、感情的だ」と気づける", answer:null },
+{ id:5, ability:"A", text:"自分の行動が、チームの雰囲気にどう影響するか理解している", answer:null },
+
+// B: 自己管理
+{ id:6, ability:"B", text:"予期せぬトラブルが起きても、パニックにならず冷静に対処している", answer:null },
+{ id:7, ability:"B", "text":"イライラすることがあっても、それを態度に出さずに業務を行っている", answer:null },
+{ id:8, ability:"B", text:"失敗したとき、いつまでも引きずらずに気持ちを切り替えている", answer:null },
+{ id:9, ability:"B", text:"厳しいフィードバックに対して、感情的にならずに受け止めている", answer:null },
+{ id:10, ability:"B", text:"やる気が出ない時でも、自らを律してタスクを遂行している", answer:null },
+
+// C: 共感
+{ id:11, ability:"C", text:"相手の表情や声のトーンから、言葉にされない感情を察っしている", answer:null },
+{ id:12, ability:"C", text:"自分とは異なる意見や価値観を持つ人のことも尊重し、理解するようにしている", answer:null },
+{ id:13, ability:"C", text:"チーム内で困っている人や、発言できていない人にすぐ気付く", answer:null },
+{ id:14, ability:"C", text:"相手の話を遮らず、最後まで傾聴している", answer:null },
+{ id:15, ability:"C", text:"相手の立場に立って物事を考えている", answer:null },
+
+// D: 社会的ｽｷﾙ
+{ id:16, ability:"D", text:"初対面の人ともすぐに打ち解け、信頼関係を築いている", answer:null },
+{ id:17, ability:"D", text:"意見が対立した際、双方の言い分を聞いて調整している", answer:null },
+{ id:18, ability:"D", text:"言いにくいことであっても、相手を尊重し、適切に伝えている", answer:null },
+{ id:19, ability:"D", text:"周囲の人を巻き込みながら、チームの目標達成に向けて協力体制を作っている", answer:null },
+{ id:20, ability:"D", text:"場の雰囲気が悪いときに、それを前向きに変えるように働きかけている", answer:null },
+
+// E: モチベーション
+{ id:21, ability:"E", text:"重要な決定をする際、一時的な感情に流されずに判断している", answer:null },
+{ id:22, ability:"E", text:"正解がない状況でも、リスクを考慮した上で自分で決断をしている", answer:null },
+{ id:23, ability:"E", text:"チーム全体の利益のためなら、時に厳しい決断を行う", answer:null },
+{ id:24, ability:"E", text:"迷ったときは、論理的なデータと自分の直感の両方を活用している", answer:null },
+{ id:25, ability:"E", text:"自分の決定に対して、結果がどうあれ責任を持つ覚悟を持っている", answer:null }
+];
+
+questions.forEach(q => q.answer = null);
+
+/* =====================
+   1. 制御ロジック (変更なし)
+===================== */
+let current = 0;
+const total = questions.length;
+
+const startScreen = document.getElementById("startScreen");
+const questionScreen = document.getElementById("questionScreen");
+const resultContainer = document.getElementById("result-container");
+const questionText = document.getElementById("questionText");
+const choicesDiv = document.getElementById("choices");
+const progress = document.getElementById("progress");
+const chartsArea = document.getElementById("charts-area");
+const analysisArea = document.getElementById("analysis-area");
+const charaArea = document.getElementById("chara-area"); 
+const matrixCharaArea = document.getElementById("matrix-chara-area"); 
+const btnArea = document.getElementById("result-buttons");
+
+document.getElementById("startBtn").addEventListener("click", () => {
+startScreen.style.display = "none";
+questionScreen.style.display = "block";
+renderQuestion();
+});
+
+function renderQuestion() {
+const q = questions[current];
+questionText.textContent = `Q${q.id}. ${q.text}`;
+progress.textContent = `${current + 1} / ${total}`;
+renderChoices();
+document.getElementById("prevBtn").style.visibility = current === 0 ? "hidden" : "visible";
+document.getElementById("nextBtn").textContent = current === total - 1 ? "結果を見る" : "次へ";
+}
+
+function renderChoices() {
+choicesDiv.innerHTML = "";
+// 0, 1, 2, 3, 4, 5, 6 の7段階。0が「そう思わない」, 6が「そう思う」
+for (let i = 0; i < 7; i++) { 
+const input = document.createElement("input");
+input.type = "radio";
+input.name = "answer";
+input.id = `q${current}_${i}`;
+input.value = i;
+const label = document.createElement("label");
+let sizeClass = "size3";
+if (i === 0 || i === 6) sizeClass = "size0";
+else if (i === 1 || i === 5) sizeClass = "size1";
+else if (i === 2 || i || 4) sizeClass = "size2";
+label.className = `circle ${sizeClass}`;
+label.setAttribute("for", input.id);
+if (questions[current].answer === i) input.checked = true;
+input.addEventListener("change", () => { questions[current].answer = i; });
+choicesDiv.appendChild(input);
+choicesDiv.appendChild(label);
+}
+}
+
+document.getElementById("nextBtn").addEventListener("click", goNext);
+document.getElementById("prevBtn").addEventListener("click", () => {
+if (current > 0) { current--; renderQuestion(); }
+});
+
+function goNext() {
+if (questions[current].answer === null) {
+alert("回答を選択してください。");
+return;
+}
+if (current < total - 1) {
+current++;
+renderQuestion();
+} else {
+if (confirm("診断を終了して結果を表示しますか？")) showResult();
+}
+}
+
+/* =====================
+   2. 集計・結果表示ロジック
+===================== */
+const mapName = { 
+A:"自己認識", 
+B:"自己管理", 
+C:"共感", 
+D:"社会的ｽｷﾙ",
+E:"ﾓﾁﾍﾞｰｼｮﾝ"
+};
+
+/**
+* 5領域の生スコア (0-30) を計算する (変更なし)
+*/
+function calculateRawScores() {
+const rawScores = { A:0, B:0, C:0, D:0, E:0 };
+questions.forEach(q => { rawScores[q.ability] += Number(q.answer); });
+return rawScores;
+}
+
+/**
+* 5領域の正規化スコア (10点満点) を計算する (変更なし)
+*/
+function calculateNormalizedScores() {
+const rawScores = calculateRawScores();
+const normalized = {};
+for (let key in rawScores) {
+// 30点満点（6点 x 5問）を10点満点に正規化
+normalized[key] = parseFloat((rawScores[key] / 3).toFixed(1));
+}
+return normalized;
+}
+
+/**
+* 2軸（関係性志向・タスク志向）のスコアを計算し、100点満点に正規化する (変更なし)
+*/
+function calculateMatrixScores() {
+const raw = calculateRawScores();
+
+// 関係性志向 (X軸): C(共感) + D(社会的ｽｷﾙ)
+const rawRelation = raw.C + raw.D;
+const maxRelation = 6 * 5 * 2; // 6点 x 5問 x 2領域 = 60点
+// タスク志向 (Y軸): A(自己認識) + B(自己管理) + E(モチベーション)*0.2
+const rawTask = raw.A + raw.B + (raw.E * 0.2);
+const maxTask = 6 * 5 * 2.2; // 6点 x 5問 x 2.2領域 = 66点
+
+// 最大値を100に揃える正規化
+const scoreX = parseFloat(((rawRelation / maxRelation) * 100).toFixed(1));
+const scoreY = parseFloat(((rawTask / maxTask) * 100).toFixed(1));
+
+return { X: scoreX, Y: scoreY };
+}
+
+
+/**
+ * スコアの高い順に上位2つの領域（キー）を取得する (変更なし)
+ */
+function getTopKeys(nScores) {
+    // 優先度の定義 (A:5, B:4, E:3, C:2, D:1) - 値が高い方が優先
+    const priority = { 'A': 5, 'B': 4, 'E': 3, 'C': 2, 'D': 1 };
+    
+    // スコアと優先順位を組み合わせたオブジェクトの配列を作成
+    const sorted = Object.keys(nScores).map(key => ({
+        key: key,
+        score: nScores[key],
+        prio: priority[key] 
+    }))
+    .sort((a, b) => {
+        // 1. スコアで降順ソート
+        if (b.score !== a.score) {
+            return b.score - a.score;
+        }
+        // 2. スコアが同点の場合、prio（優先順位）で降順ソート
+        return b.prio - a.prio; 
+    });
+
+    // 上位2つを取得し、キーをアルファベット順にソートして返す (AB, AC, ... の組み合わせを作るため)
+    const topKeys = sorted.slice(0, 2).map(item => item.key);
+    return topKeys.sort();
+}
+
+/**
+ * 上位2つの領域の組み合わせに基づいて総合EQタイプを判定する
+ * 【修正済】: 全ての return オブジェクトでタイプ名を格納するキーを 'name' に統一。
+ */
+function getEQType(topKeys, nScores) {
+    const top1 = topKeys[0];
+    const top2 = topKeys[1];
+    const comboKey = topKeys.join(''); // 例: ['A', 'B'] -> 'AB'
+
+    // 判定データマップ (変更なし)
+    const types = {
+        'AB': { name: "安定のセルフマネージャー", desc: "高い自己理解に基づき、感情をコントロールし行動を律するタイプ", detail: "内省力と精神的な安定性を武器に、チームの規範となります。計画的な実行が得意です。", color: "#4CAF50" }, // Green
+        'AC': { name: "洞察のエンパス", desc: "自分と他者の感情を深く理解し、心の繋がりを重視するタイプ", detail: "自己認識力で客観性を保ちつつ、共感力で他者のニーズを的確に把握します。コーチングやフィードバックに優れます。", color: "#FFC107" }, // Yellow
+        'AD': { name: "調整力コーディネーター", desc: "自己を客観視し、その理解を基に対人関係を円滑に進めるタイプ", detail: "自分の限界や感情を把握しているため、無理なく他者との協力関係を築けます。中立的な立場で問題解決をします。", color: "#2196F3" }, // Blue
+        'AE': { name: "内発的モチベーター", desc: "自己の価値観と信念に基づき、自ら目標設定し行動を推進するタイプ", detail: "何のために決断するのか、という軸が明確です。周囲に依存せず、内側から湧き出るエネルギーでチームを鼓舞します。", color: "#F44336" }, // Red
+
+        'BC': { name: "温厚コミュニケーター", desc: "冷静さと優しさを兼ね備え、感情的な対立を和らげるタイプ", detail: "自己管理能力により、他者の感情に引きずられず安定した対応ができます。チームのムードメーカーであり、心理的安全性を提供します。", color: "#9C27B0" }, // Purple
+        'BD': { name: "冷静沈着なバランサー", desc: "感情に流されず冷静な態度で、目標達成に向けてバランスをとりながら協力を促すタイプ", detail: "トラブル時でも感情的にならず、淡々とメンバーを動機づけられます。明確な指示と一貫した態度で信頼を集めます。", color: "#00BCD4" }, // Cyan
+        'BE': { name: "逆境に強いエクスキューター", desc: "感情に左右されずに、一度決めた目標に向かって着実に進むタイプ", detail: "決断力と自己規律を兼ね備え、難易度の高い目標でも諦めません。計画通りに実行しきる力がチームの成果を支えます。", color: "#FF9800" }, // Orange
+
+        'CD': { name: "共感コラボレーター", desc: "高い共感力と社交性で、チームの協力体制を自然に構築するタイプ", detail: "誰とでも信頼関係を築き、メンバー間の感情的な障壁を取り除きます。多様な意見を尊重し、統合的なソリューションを見出せます。", color: "#8BC34A" }, // Light Green
+        'CE': { name: "支援型エンゲージャー", desc: "他者の感情を考慮しつつ、皆が納得できる決断を導くタイプ", detail: "メンバーの気持ちを理解した上で、必要な決断を勇気を持って下せます。意思決定プロセスにおける「納得感」を重視します。", color: "#E91E63" }, // Pink
+
+        'DE': { name: "ダイナミック・ファシリテータ―", desc: "強い影響力と決断力で、周囲を鼓舞し目標達成に導くタイプ", detail: "コミュニケーション能力で人を動かし、迷いなく決断を下します。特に変化の激しい状況で、チームを牽引する力があります。", color: "#673AB7" }, // Deep Purple
+    };
+
+    const overallAvg = (nScores.A + nScores.B + nScores.C + nScores.D + nScores.E) / 5;
+    
+    // 全てのスコアが平均4点未満 (30点満点換算で12点未満) の場合
+    if (Object.values(nScores).every(score => score < 4)) {
+        return { 
+            name: "成長準備型", 
+            desc: "現時点ではEQの各領域に成長の余地があります。特に自己認識（A）を高めることで、他の領域の向上にもつながります。", 
+            detail: "自己理解から一歩ずつ始め、最も興味を持てる領域（トップキー）を意識的に伸ばしていきましょう。",
+            color: "#607D8B" // Grayish Blue
+        };
+    }
+
+    // 上位2つの組み合わせで判定
+    const result = types[comboKey];
+    
+    // 特定の組み合わせがない、またはスコアが非常に高い場合をバランス型とする
+    if (!result || overallAvg >= 8) {
+        return { 
+            name: "バランス型パーソン", 
+            desc: "全能力が平均以上の総合タイプ。特定の偏りがなく、幅広い役割をこなせます。", 
+            detail: "すべてのEQ領域で高い能力を発揮しており、非常にバランスが取れています。あなたの安定性がチームの土台となります。", 
+            color: "#007bff" // Blue
+        };
+    }
+
+    // 判定結果を返す (nameキーに統一)
+    return {
+        name: result.name, // 修正箇所
+        desc: result.desc,
+        detail: result.detail,
+        color: result.color
+    };
+}
+
+
+/**
+* マトリクス座標に基づいたコメント判定
+* 【修正済】: 右上エリア (X>=50, Y>=50) をさらに4分割
+* @param {number} x - 関係性志向スコア (X軸)
+* @param {number} y - タスク志向スコア (Y軸)
+*/
+function getMatrixComment(x, y) {
+    const center = 50; // 50点を中心線
+    const high = 75; // 75点を高スコアの閾値
+    
+    // Y軸：下（低）〜上（高）、X軸：左（低）〜右（高）
+    
+    // === 右上エリア (X >= 50, Y >= 50) の詳細分割 ===
+    if (x >= center && y >= center) {
+        // A. 理想バランス型 (X >= 75, Y >= 75)
+        if (x >= high && y >= high) {
+            return {
+                type: "🌟理想バランス型",
+                desc: "関係性志向、タスク志向ともに非常に高く、理想的なバランスを実現しています。あなたはチームを成功に導く核となる存在です。",
+                color: "#4CAF50" // Green
+            };
+        }
+        // B. タスク強み型 (X < 75, Y >= 75)
+        else if (y >= high) {
+            return {
+                type: "タスク優先・高効率型",
+                desc: "タスク志向が特に高く、成果を出すことに長けています。関係性も平均以上ですが、より円滑なコミュニケーションを意識することで、さらにチーム全体の能力を発揮できます。",
+                color: "#8BC34A" // Light Green
+            };
+        }
+        // C. 関係性強み型 (X >= 75, Y < 75)
+        else if (x >= high) {
+            return {
+                type: "関係性優先・高協調型",
+                desc: "関係性志向が非常に高く、チームの調和と協力を重視します。タスク志向も平均以上ですが、自己管理能力や決断力を意識的に高めることで、チームを成功に導く存在に近づけます。",
+                color: "#00BCD4" // Cyan
+            };
+        }
+        // D. バランス型 (50 <= X < 75, 50 <= Y < 75)
+        else {
+            return {
+                type: "バランス型",
+                desc: "関係性とタスクの両方で平均以上の水準を保っています。特定の偏りがなく、幅広い役割をこなせますが、どちらもまだ伸びしろがあります。全体バランスを見ながら、① 自己認識 → ② 自己管理 → ③ モチベーション → ④ 共感 → ⑤ 社会的スキルの順で伸ばしていくとよいでしょう。",
+                color: "#4CAF50" // Green (ベースの色を維持)
+            };
+        }
+    }
+    // === その他の3象限 (変更なし) ===
+    // 2. 低関係性/高タスク (左上)
+    else if (x < center && y >= center) {
+        return {
+            type: "タスク偏重型",
+            desc: "タスク志向は高いものの、他者との関係構築や共感の面で改善の余地があります。周囲との協力や調整を意識することで、より大きな成果につながります。",
+            color: "#FFC107" // Yellow
+        };
+    }
+    // 3. 低関係性/低タスク (左下)
+    else if (x < center && y < center) {
+        return {
+            type: "伸びしろ型",
+            desc: "タスク志向、関係性志向ともに改善の余地があります。まずは自己理解や自己管理を深め、自身の感情や行動をコントロールすることから始めましょう。EQは積み木型です。全体バランスをとりつつ、① 自己認識 → ② 自己管理 → ③ モチベーション → ④ 共感 → ⑤ 社会的スキルの順で育てていくのがおすすめです。",
+            color: "#F44336" // Red
+        };
+    }
+    // 4. 高関係性/低タスク (右下)
+    else { // x >= center && y < center
+        return {
+            type: "関係性協調型",
+            desc: "関係性志向は高いものの、目標達成や自己規律の面で改善の余地があります。対人スキルを活かしつつ、目標設定と実行力を高めることが鍵です。",
+            color: "#2196F3" // Blue
+        };
+    }
+}
+
+
+/**
+* マトリクス図の4象限背景を描画するChart.jsプラグイン
+* 【修正済】: 右上エリアをさらに4分割して描画
+*/
+const quadrantPlugin = {
+  id: 'quadrant',
+  beforeDraw: (chart) => {
+    const { ctx, chartArea, scales } = chart;
+    const { x, y } = scales;
+
+    const center = 50; // 中心線
+    const high = 75; // 新しい高スコア閾値
+    
+    // 50点と75点のピクセル位置を取得
+    const centerX = x.getPixelForValue(center);
+    const centerY = y.getPixelForValue(center);
+    const highX = x.getPixelForValue(high);
+    const highY = y.getPixelForValue(high);
+
+    ctx.save();
+    ctx.globalAlpha = 0.4;
+
+    // --- 左下: 低関係性 / 低タスク (X<50, Y<50) -> 消極型（赤）---
+    ctx.fillStyle = '#F44336';
+    ctx.fillRect(chartArea.left, centerY, centerX - chartArea.left, chartArea.bottom - centerY);
+
+    // --- 左上: 低関係性 / 高タスク (X<50, Y>=50) -> タスク偏重型（黄）---
+    ctx.fillStyle = '#FFC107';
+    ctx.fillRect(chartArea.left, chartArea.top, centerX - chartArea.left, centerY - chartArea.top);
+
+    // --- 右下: 高関係性 / 低タスク (X>=50, Y<50) -> 関係性協調型（青）---
+    ctx.fillStyle = '#2196FF';
+    ctx.fillRect(centerX, centerY, chartArea.right - centerX, chartArea.bottom - centerY);
+
+    // --- 右上エリア (X>=50, Y>=50) の詳細分割 ---
+
+    // D. ややバランス型 (50 <= X < 75, 50 <= Y < 75)
+    ctx.fillStyle = '#4CFF50'; // 緑色
+    ctx.fillRect(centerX, centerY, highX - centerX, highY - centerY);
+
+    // B. タスク強み型 (50 <= X < 75, Y >= 75)
+    ctx.fillStyle = '#4CFF50'; // 緑色
+    ctx.fillRect(centerX, chartArea.top, highX - centerX, highY - chartArea.top);
+
+    // C. 関係性強み型 (X >= 75, 50 <= Y < 75)
+    ctx.fillStyle = '#4CFF50'; // 緑色
+    ctx.fillRect(highX, centerY, chartArea.right - highX, highY - centerY);
+
+    // A. 理想バランス型 (X >= 75, Y >= 75)
+    ctx.fillStyle = '#00FF00'; // 明るい緑色
+    ctx.fillRect(highX, chartArea.top, chartArea.right - highX, highY - chartArea.top);
+    
+
+    ctx.restore();
+
+    // 中央線と新閾値線を描画
+    ctx.save();
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 2]); // 破線の間隔
+
+    // X軸中央線 (関係性志向50点)
+    ctx.beginPath();
+    ctx.moveTo(centerX, chartArea.top);
+    ctx.lineTo(centerX, chartArea.bottom);
+    ctx.stroke();
+
+    // Y軸中央線 (タスク志向50点)
+    ctx.beginPath();
+    ctx.moveTo(chartArea.left, centerY);
+    ctx.lineTo(chartArea.right, centerY);
+    ctx.stroke();
+    
+    ctx.setLineDash([2, 2]); // 破線の間隔
+
+    // X軸75点線 (右上エリア内のみ)
+    ctx.beginPath();
+    ctx.moveTo(highX, chartArea.top);
+    ctx.lineTo(highX, centerY);
+    ctx.stroke();
+
+    // Y軸75点線 (右上エリア内のみ)
+    ctx.beginPath();
+    ctx.moveTo(centerX, highY);
+    ctx.lineTo(chartArea.right, highY);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+};
+
+
+function showResult() {
+questionScreen.style.display = "none";
+resultContainer.style.display = "block";
+window.scrollTo(0,0);
+
+const normalizedScores = calculateNormalizedScores();
+const matrixScores = calculateMatrixScores();
+
+// EQ総合タイプ判定
+const topKeys = getTopKeys(normalizedScores); 
+const overallResult = getEQType(topKeys, normalizedScores); 
+
+// マトリクスタイプ判定
+const matrixResult = getMatrixComment(matrixScores.X, matrixScores.Y); 
+
+// --- ① レーダーチャート (5領域のバランス) ---
+chartsArea.innerHTML = ""; 
+const radarCanvas = document.createElement("canvas");
+chartsArea.appendChild(radarCanvas);
+new Chart(radarCanvas, {
+type: 'radar',
+data: {
+labels: [mapName.A, mapName.B, mapName.C, mapName.D, mapName.E],
+datasets: [{
+label: 'EQ 5領域バランス (10点満点)',
+data: [
+  normalizedScores.A, 
+  normalizedScores.B, 
+  normalizedScores.C, 
+  normalizedScores.D, 
+  normalizedScores.E
+],
+backgroundColor: 'rgba(0, 123, 255, 0.2)',
+borderColor: '#007bff',
+pointBackgroundColor: '#007bff',
+pointBorderWidth: 1,
+borderWidth: 2
+}]
+},
+options: {
+scales: {
+r: {
+min: 0,
+max: 10, 
+ticks: { stepSize: 2 },
+pointLabels: { font: { size: 12, weight: 'bold' } } 
+}
+},
+plugins: { 
+  legend: { display: true, position: 'bottom' },
+  title: { display: true, text: '【EQ 5領域レーダーチャート】', font: { size: 16, weight: 'bold' } }
+}
+}
+});
+
+
+// --- ② EQ 総合タイプ判定 (nameキーを参照) ---
+charaArea.innerHTML = `
+<div class="result-section">
+<h3>あなたのEQタイプ</h3>
+<div class="type-box" style="border-color: ${overallResult.color}; background:#fff;">
+<span class="type-title" style="color: ${overallResult.color};">${overallResult.name}</span>
+<p style="margin-top:10px; font-weight:bold; text-align: left;">${overallResult.desc}</p>
+<p style="font-size:0.9em; margin-top:10px; text-align: left;">
+<span style="font-weight: bold;">詳細:</span> ${overallResult.detail}
+</p>
+</div>
+</div>
+`;
+
+
+// --- ③ 2軸スコア表示 ---
+analysisArea.innerHTML = `
+<div class="result-section">
+<h3>関係性志向とタスク志向のマトリクス</h3>
+<p style="font-size:1.2em;">
+ 関係性志向スコア: ${matrixScores.X} /100点<br>
+ タスク志向スコア: ${matrixScores.Y} /100点
+</p>
+</div>
+`;
+
+// --- ④ マトリクス図 ---
+// Chart.jsはキャンバスの再利用に問題があるため、前のグラフがあれば破棄または新しいキャンバスを使用するのが理想
+const matrixCanvas = document.getElementById('matrixChart');
+if (matrixCanvas.chart) { matrixCanvas.chart.destroy(); }
+
+// 縦横比を1:1 (正方形) にするためCSSで高さが設定されていることを前提とします。
+matrixCanvas.chart = new Chart(matrixCanvas, {
+    type: 'scatter',
+    data: {
+        datasets: [{
+            label: 'あなたの現在位置',
+            data: [{ x: matrixScores.X, y: matrixScores.Y }],
+            backgroundColor: '#007bff',
+            pointRadius: 10,
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false, 
+        aspectRatio: 1, // 縦横比を1:1 (正方形) に設定
+        plugins: {
+            legend: { display: false },
+            title: {
+                display: true,
+                text: '【関係性志向 - タスク志向 マトリクス】',
+                font: { size: 16, weight: 'bold' },
+                padding: { top: 0, bottom: 20 }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return `${matrixResult.type}: (X:${matrixScores.X}, Y:${matrixScores.Y})`;
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                title: { display: true, text: '◀ 関係性志向スコア ▶', font: { weight: 'bold' } },
+                min: 0,
+                max: 100,
+                ticks: { stepSize: 25, color: '#333' },
+                grid: { display: false }
+            },
+            y: {
+                title: { display: true, text: '◀ タスク志向スコア ▶', font: { weight: 'bold' } },
+                min: 0,
+                max: 100,
+                ticks: { stepSize: 25, color: '#333' },
+                reverse: false, // 縦軸の反転を解除（下:0, 上:100）
+                position: 'left',
+                grid: { display: false }
+            }
+        },
+        layout: { padding: { top: 0, bottom: 0, left: 10, right: 10 } }
+    },
+    plugins: [quadrantPlugin]
+});
+
+
+// --- ⑤ マトリクスタイプ判定 ---
+matrixCharaArea.innerHTML = `
+<div class="result-section">
+<h3>あなたの貢献タイプ</h3>
+<div class="type-box" style="border-color: ${matrixResult.color}; background:#fff;">
+<span class="type-title" style="color: ${matrixResult.color}">${matrixResult.type}</span>
+<p style="margin-top:10px; font-weight:bold; text-align: left;">${matrixResult.desc}</p>
+</div>
+</div>
+<div class="type-box" style="text-align: left;">
+<small>
+※これはあくまであなたの自己評価の結果です。
+自己評価が高すぎたり、低すぎてしまうと、
+周囲からの評価とズレているかもしれません。
+ですので、その点には十分にご留意くださいね。
+</small>
+</p>
+</div>
+`;
+
+
+// --- ⑥ ボタンエリア (nameキーを参照) ---
+const text = encodeURIComponent(`EQ診断結果：私のEQタイプは【${overallResult.name}】、チーム貢献タイプは【${matrixResult.type}】でした！\nタスク志向: ${matrixScores.Y}\n関係性志向: ${matrixScores.X}\n#EQ診断 #マトリクス`);
+const shareUrl = `https://twitter.com/intent/tweet?text=${text}`;
+
+btnArea.innerHTML = `
+<a href="${shareUrl}" target="_blank" class="action-btn share-btn">結果をXでシェア</a>
+<button onclick="location.reload()" class="action-btn ghost">もう一度診断する</button>
+<a href="https://note.com/alc_chron2025" target="_blank" class="action-btn note-btn">制作者プロフィール (note)</a>
+`;
+}
+</script>
+
+</body>
+</html>
