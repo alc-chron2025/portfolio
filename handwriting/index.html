@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>筆跡性格診断</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+/* =====================
+ * 共通スタイル (変更なし)
+ * ===================== */
+body {
+    font-family: "Hiragino Sans", "Arial", sans-serif;
+    background: #f0f4f8;
+    padding: 20px;
+    text-align: center;
+    color: #333;
+}
+#Screen {
+    text-align: center;
+    padding: 30px;
+    max-width: 750px; 
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+h2 { color: #5a5a5a; margin-bottom: 20px; }
+
+#startBtn {
+    height: 40px;
+    width: 200px;
+    border-color: #aaf;
+    border-radius: 16px;
+    color: #fff;
+    font-size: 1.2em;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+}
+
+#startBtn:hover {
+    opacity: 0.7;
+}
+
+/* =====================
+ * 質問エリア (変更なし)
+ * ===================== */
+.status {
+    font-size: 1.2em;
+    margin-bottom: 24px;
+    font-weight: bold;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 10px;
+}
+#mainImageArea {
+    margin-bottom: 20px; 
+    min-height: 250px; /* 画像エリアの最小高さを増やす */
+    /* 中央配置を明確にするために追加 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#mainImage {
+    min-width: 250px; 
+    min-height: 200px; /* 画像の最大高さを増やす（例: 150px -> 300px） */
+    height: auto; 
+    border: 1px solid #ddd; 
+    display: none;
+    /* object-fit: contain; /* 必要に応じて追加 */
+}
+.choices-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap; 
+    gap: 20px;
+    margin: 30px 0;
+}
+.choice-item {
+    cursor: pointer;
+    text-align: center;
+    border: 3px solid transparent;
+    border-radius: 8px;
+    padding: 10px;
+    transition: all 0.2s;
+    background: #f9f9f9;
+    flex: 1 1 40%; 
+    max-width: 300px;
+    min-height: 80px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.choice-item:hover {
+    background: #eef7ff;
+    border-color: #a0d4ff;
+}
+.choice-item img {
+    display: none !important;
+}
+.choice-label {
+    font-weight: bold;
+    font-size: 1.1em;
+    padding: 5px 0;
+    color: #555;
+    text-align: center;
+}
+
+input[type="radio"] { 
+    display: none !important; 
+}
+input[type="radio"]:checked + .choice-item {
+    border-color: #007bff;
+    background: #e6f2ff;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
+}
+
+/* ナビゲーション (変更なし) */
+.progress { margin-top: 20px; font-size: 14px; color: #888; }
+#prevBtn, #nextBtn {
+    margin: 20px 10px;
+    padding: 10px 25px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+#nextBtn { background-color: #5a5a5a; color: white; }
+#prevBtn { background-color: #e0e0e0; color: #555; }
+#nextBtn:hover { background-color: #333; }
+
+/* =====================
+ * 結果画面 (変更なし)
+ * ===================== */
+.result-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 12px;
+    text-align: left;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+.result-section h3 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #5a5a5a;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}
+.matrix-result {
+    border: 3px solid #007bff;
+    background: #e6f2ff;
+    padding: 25px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+.matrix-result h3 {
+    color: #007bff;
+    font-size: 1.8em;
+    border-bottom: none;
+}
+.individual-result {
+    padding: 25px;
+    text-align: center;
+    margin-bottom: 20px;
+    border: 3px solid; /* 色はJSで指定 */
+}
+.individual-result h3 {
+    font-size: 1.8em;
+    border-bottom: none;
+}
+.chart-title {
+    font-size: 1.3em;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+    color: #333;
+}
+/* Chart表示エリアのサイズ調整 */
+#matrixChartContainer, #charts-area {
+    margin: 0 auto 30px;
+    max-width: 450px; 
+}
+/* キャンバス要素自体を中央に配置するための追加調整 */
+#matrixChart {
+    /* Chart.jsによって生成されるキャンバス要素 */
+    display: block; /* インライン要素の余白をなくす */
+    margin: 0 auto; /* 確実に中央寄せ */
+}
+
+/* ★ 5段階評価用のスタイル (変更なし) */
+.star-rating-container {
+    max-width: 400px;
+    margin: 20px auto;
+}
+.trait-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px dashed #ddd;
+}
+.trait-item:last-child {
+    border-bottom: none;
+}
+.trait-name {
+    font-weight: bold;
+    color: #333;
+    flex-basis: 35%;
+    text-align: left;
+}
+.stars {
+    flex-basis: 60%;
+    text-align: right;
+    font-size: 1.3em;
+    color: gold; /* 評価色 */
+    letter-spacing: 2px;
+}
+
+
+/* アクションボタンのスタイル (変更なし) */
+#result-buttons {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+}
+.action-btn {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: 10px auto;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    border: none;
+}
+.reload-btn {
+    background-color: #f0f0f0; 
+    color: #333; 
+    border: 1px solid #ccc;
+}
+.share-btn {
+    background-color: #1DA1F2; 
+    color: white;
+}
+.note-btn {
+    background-color: #3B7E3E; 
+    color: white;
+}
+</style>
+</head>
+<body>
+
+<div id="Screen">
+
+<div id="startScreen">
+<h2>筆跡性格診断</h2>
+<p>筆跡の特徴から、行動特性・責任感・詳細性格の傾向を診断します。</p>
+<br>
+
+<p>
+まずは、宛名書きをイメージしながら  <br><br>
+<strong style="font-size: 2em;">「日木口量子様」</strong><br><br>
+の6文字を書いてください🖊。<br><br><br>
+※原稿用紙のマス目の中に書くことを推奨<br><br><br>
+
+書けましたか？…書けたら、ここからが本番です！<br><br>
+👇
+</p>
+
+<button id="startBtn">診断をスタート</button>
+</div>
+
+<div id="questionScreen" style="display: none;">
+<div class="progress" id="progress">1 / 8</div>
+<div class="status" id="questionText"></div>
+
+<div id="mainImageArea" style="margin-bottom: 20px; min-height: 150px;">
+    <img id="mainImage" style="max-width: 100%; max-height: 150px; height: auto; border: 1px solid #ddd; display: none;">
+</div>
+
+<div class="choices-container" id="choices">
+    </div>
+
+<div>
+<button id="prevBtn">戻る</button>
+<button id="nextBtn">次へ</button>
+</div>
+</div>
+
+<div id="result-container" style="display:none; padding-bottom: 30px;">
+<h2>筆跡性格診断の結果</h2>
+
+<div id="matrix-result-area" class="result-section"></div>
+
+<div id="charts-area">
+    <div class="chart-title">【診断 III】3つの詳細性格 5段階評価</div>
+    <div id="starRatingsContainer" class="star-rating-container">
+    </div>
+
+<br>
+<br>
+    <p style="text-align: left;">
+        この筆跡診断アプリで示した結果は個人の行動特性や性格を型にはめて固定化するものではありません。<br>
+        “筆跡”を基に行動特性や性格の傾向をつかむ自己理解のためのものです。<br>
+        「そういう傾向あるかも」など、自分自身に対する気付き・内省を促すことを意図しています。
+    </p>
+</div>
+
+<div id="analysis-area"></div> 
+
+
+<div id="result-buttons"></div>
+</div>
+
+</div>
+
+<script>
+/* =====================
+ * 0. 設定とデータ
+ * ===================== */
+
+// タイプIII（レーダー軸）の定義 (A:堅実性, B:柔軟性, C:責任感)
+const radarMapName = {
+    A: "堅実性", 
+    B: "柔軟性", 
+    C: "責任感の強さ" 
+};
+const initialRadarScores = { A: 0, B: 0, C: 0 };
+
+
+// 全8問のデータ定義 (変更なし)
+const questions = [
+    { 
+        id: 1, type: 'i', text: "書いた文字のマス目に対しての大きさは？", 
+        mainImage: "images/size.jpg",
+        choices: [
+            { label: "A. マス目いっぱいの大きさ", scores: { X: 0.2, Y: 0.4 } }, 
+            { label: "B. 中くらいの大きさ", scores: { X: 0, Y: 0 } }, 
+            { label: "C. 余白が余るくらいに小さい", scores: { X: -0.2, Y: -0.4 } } 
+        ], answer: null 
+    },
+    { 
+        id: 2, type: 'i', text: "筆圧の強さは？", 
+        mainImage: "images/strong.jpg",
+        choices: [
+            { label: "A. 強い", scores: { X: 0.4, Y: 0.2 } }, 
+            { label: "B. ふつう", scores: { X: 0, Y: 0 } }, 
+            { label: "C. 弱い", scores: { X: -0.4, Y: -0.2 } } 
+        ], answer: null 
+    },
+    {
+        id: 3, type: 'ii_1', text: "「様」の筆跡はどれに近いですか？", 
+        mainImage: "images/sama.jpg",
+        choices: [
+            { label: "A. 木へんの突き抜けが大きい", scores: { type: 0 } }, 
+            { label: "B. 木へんの突き抜けが小さい", scores: { type: 1 } }, 
+            { label: "C. へんとつくりの間が広い", scores: { type: 2 } }, 
+            { label: "D. へんとつくりの間が狭い", scores: { type: 3 } }, 
+            { label: "E. 木へんの書き出しのクセが強い", scores: { type: 4 } }, 
+            { label: "F. 木へんの書き出しがおだやか", scores: { type: 5 } } 
+        ], answer: null
+    },
+    { 
+        id: 4, type: 'iii', text: "「日」の筆跡はどれに近いですか？", 
+        mainImage: "images/nichi.jpg",
+        choices: [
+            { label: "A. すき間がなく、角が正確 (ルールに対して厳格)", scores: { A: 6, B: -4, C: 0 } }, 
+            { label: "B. 少しすき間があり、角は正確", scores: { A: 2, B: 2, C: 0 } }, 
+            { label: "C. 右上角が丸い (柔軟/適応)", scores: { B: 6, A: -4, C: 0 } }, 
+            { label: "D. すき間があり、右上角も丸い (ルールに対してルーズ)", scores: { B: 4, A: -6, C: 0 } } 
+        ], answer: null 
+    },
+    { 
+        id: 5, type: 'ii_2', text: "「木」の筆跡はどれに近いですか？", 
+        mainImage: "images/ki.jpg", 
+        choices: [
+            { label: "A. 左はらいが長い", scores: { type: 0 } }, 
+            { label: "B. バランスがとれている", scores: { type: 1 } }, 
+            { label: "C. 右はらいが長い", scores: { type: 2 } } 
+        ], answer: null 
+    },
+    { 
+        id: 6, type: 'iii', text: "「口」の筆跡はどれに近いですか？", 
+        mainImage: "images/kuchi.jpg", 
+        choices: [
+            { label: "A. 結び目も含めてすき間なく密閉", scores: { A: 4, B: -3, C: 0 } }, 
+            { label: "B. やや結び目にすき間がある", scores: { A: 2, B: 1, C: 0 } }, 
+            { label: "C. 3・4画目が「Z」のように崩して書かれている", scores: { B: 4, A: -3, C: 0 } }
+        ], answer: null 
+    },
+    { 
+        id: 7, type: 'ii_3', text: "「量」の筆跡はどれに近いですか？", 
+        mainImage: "images/ryou.jpg",
+        choices: [
+            { label: "A. 横画が等間隔で整然としている", scores: { type: 0 } }, 
+            { label: "B. 横画の間隔がばらばらである", scores: { type: 1 } } 
+        ], answer: null 
+    },
+    { 
+        id: 8, type: 'iii', text: "「子」の筆跡はどれに近いですか？", 
+        mainImage: "images/ko.jpg",
+        choices: [
+            { label: "A. 最後のはねの部分が大きく、力強くはねている", scores: { C: 10, A: 0, B: 0 } }, 
+            { label: "B. 最後のはねの部分の大きさは中程度", scores: { C: 0, A: 0, B: 0 } }, 
+            { label: "C. 最後のはねの部分が小さい、またはほとんどはねていない", scores: { C: -8, A: 0, B: 0 } } 
+        ], answer: null 
+    }
+];
+
+
+/* =====================
+ * 1. 制御ロジック (変更なし)
+ * ===================== */
+let current = 0;
+const total = questions.length; 
+
+const startScreen = document.getElementById("startScreen");
+const questionScreen = document.getElementById("questionScreen");
+const resultContainer = document.getElementById("result-container");
+const questionText = document.getElementById("questionText");
+const choicesDiv = document.getElementById("choices");
+const progress = document.getElementById("progress");
+const mainImage = document.getElementById("mainImage");
+
+document.getElementById("startBtn").addEventListener("click", () => {
+    startScreen.style.display = "none";
+    questionScreen.style.display = "block";
+    renderQuestion();
+});
+
+function renderQuestion() {
+    const q = questions[current];
+    questionText.textContent = `Q${q.id}. ${q.text}`;
+    progress.textContent = `${current + 1} / ${total}`;
+    
+    if (q.mainImage) {
+        mainImage.src = q.mainImage;
+        mainImage.style.display = "block";
+    } else {
+        mainImage.style.display = "none";
+    }
+
+    renderChoices(q);
+
+    document.getElementById("prevBtn").style.visibility = current === 0 ? "hidden" : "visible";
+    document.getElementById("nextBtn").textContent = current === total - 1 ? "結果を見る" : "次へ";
+}
+
+function renderChoices(q) {
+    choicesDiv.innerHTML = "";
+    q.choices.forEach((choice, index) => {
+        const input = document.createElement("input");
+        input.type = "radio";
+        input.name = "answer";
+        input.id = `q${current}_${index}`;
+        input.value = index;
+
+        const label = document.createElement("label");
+        label.setAttribute("for", input.id);
+        label.className = "choice-item";
+        
+        const span = document.createElement("span");
+        span.className = "choice-label";
+        span.textContent = choice.label;
+
+        label.appendChild(span);
+
+        if (q.answer === index) input.checked = true;
+
+        input.addEventListener("change", () => { q.answer = index; });
+
+        choicesDiv.appendChild(input);
+        choicesDiv.appendChild(label);
+    });
+}
+
+document.getElementById("nextBtn").addEventListener("click", goNext);
+document.getElementById("prevBtn").addEventListener("click", () => {
+    if (current > 0) { current--; renderQuestion(); }
+});
+
+function goNext() {
+    if (questions[current].answer === null) {
+        alert("回答を選択してください。");
+        return;
+    }
+    if (current < total - 1) {
+        current++;
+        renderQuestion();
+    } else {
+        if (confirm("診断を終了して結果を表示しますか？")) showResult();
+    }
+}
+
+
+/* =====================
+ * 2. 集計・結果表示ロジック (変更なし)
+ * ===================== */
+
+function calculateResults() {
+    const finalRadarScores = { ...initialRadarScores }; 
+    const finalMatrixScores = { X: 0, Y: 0 };
+    
+    let finalTypeII_1 = null; 
+    let finalTypeII_2 = null; 
+    let finalTypeII_3 = null; 
+    
+    const maxMatrixAbs = 0.6; 
+    const absoluteRadarMax = 10; 
+
+    questions.forEach(q => {
+        if (q.answer !== null) {
+            const selectedScores = q.choices[q.answer].scores;
+            
+            if (q.type === 'i') {
+                finalMatrixScores.X += selectedScores.X || 0;
+                finalMatrixScores.Y += selectedScores.Y || 0;
+            } else if (q.type === 'ii_1') {
+                finalTypeII_1 = selectedScores.type;
+            } else if (q.type === 'ii_2') {
+                finalTypeII_2 = selectedScores.type;
+            } else if (q.type === 'ii_3') {
+                finalTypeII_3 = selectedScores.type;
+            } else if (q.type === 'iii') { 
+                finalRadarScores.A += selectedScores.A || 0;
+                finalRadarScores.B += selectedScores.B || 0;
+                finalRadarScores.C += selectedScores.C || 0; 
+            } 
+        }
+    });
+    
+    // レーダー軸の正規化 (±10点スケール)
+    const normalizedRadarScores = {};
+    const scale = 10;
+    for (let key in finalRadarScores) {
+        if (absoluteRadarMax > 0) {
+            normalizedRadarScores[key] = parseFloat(((finalRadarScores[key] / absoluteRadarMax) * scale).toFixed(1)); 
+        } else {
+            normalizedRadarScores[key] = 0;
+        }
+    }
+    
+    // マトリクス軸の正規化 (±1.0点スケール)
+    const normalizedMatrixScores = {
+        X: parseFloat(((finalMatrixScores.X / maxMatrixAbs) * 1.0).toFixed(1)), 
+        Y: parseFloat(((finalMatrixScores.Y / maxMatrixAbs) * 1.0).toFixed(1))
+    };
+
+    return { 
+        matrix: normalizedMatrixScores, 
+        radar: normalizedRadarScores, 
+        typeII_1: finalTypeII_1, 
+        typeII_2: finalTypeII_2, 
+        typeII_3: finalTypeII_3 
+    };
+}
+
+function showResult() {
+    questionScreen.style.display = "none";
+    resultContainer.style.display = "block";
+    window.scrollTo(0, 0);
+
+    const results = calculateResults();
+    const matrixArea = document.getElementById("matrix-result-area");
+    const chartsArea = document.getElementById("charts-area");
+    const analysisArea = document.getElementById("analysis-area");
+    const starRatingsContainer = document.getElementById("starRatingsContainer");
+    const btnArea = document.getElementById("result-buttons");
+    
+    analysisArea.innerHTML = ''; 
+
+    // I. マトリクス結果の表示
+    const matrixAnalysis = getMatrixAnalysis(results.matrix.X, results.matrix.Y);
+    matrixArea.innerHTML = `
+        <h3>【診断 I】行動特性マトリクス</h3>
+        <div class="matrix-result">
+            <div id="matrixChartContainer" style="height: 300px;">
+                <canvas id="matrixChart"></canvas>
+            </div>
+
+            <!--<h3>${matrixAnalysis.name}</h3>-->
+            <p style="margin-top:15px; font-weight:bold; text-align: left;">${matrixAnalysis.desc}</p>
+            <p style="font-size:0.9em; color:#555; margin-top:10px; text-align: left;">${matrixAnalysis.detail}</p>
+        </div>
+    `;
+
+    // グラフ描画
+    renderMatrixChart(results.matrix.X, results.matrix.Y, 'matrixChart'); 
+    
+    
+    // II-1. Q3 (様: 責任感と対人コミットメント) の結果表示
+    const typeII_1Analysis = getTypeII_1Analysis(results.typeII_1);
+    analysisArea.innerHTML += `
+        <div class="result-section">
+            <h3>【診断 II-1】「様」の字が示す責任感と対人コミットメント</h3>
+            <div class="individual-result" style="border-color:#007bff; background:#e6f2ff;">
+                <h3 style="color:#007bff;">${typeII_1Analysis.name}</h3>
+                <p style="margin-top:15px; font-weight:bold; text-align: left;">${typeII_1Analysis.desc}</p>
+                <p style="font-size:0.9em; color:#555; margin-top:10px; text-align: left;">${typeII_1Analysis.detail}</p>
+            </div>
+        </div>
+    `;
+
+    // II-2. Q5 (木: 自己顕示欲と熱中タイプ) の結果表示
+    const typeII_2Analysis = getTypeII_2Analysis(results.typeII_2);
+    analysisArea.innerHTML += `
+        <div class="result-section">
+            <h3>【診断 II-2】「木」の字が示す自己顕示欲と熱中タイプ</h3>
+            <div class="individual-result" style="border-color:#3B7E3E; background:#e9f9e9;">
+                <h3 style="color:#3B7E3E;">${typeII_2Analysis.name}</h3>
+                <p style="margin-top:15px; font-weight:bold; text-align: left;">${typeII_2Analysis.desc}</p>
+                <p style="font-size:0.9em; color:#555; margin-top:10px; text-align: left;">${typeII_2Analysis.detail}</p>
+            </div>
+        </div>
+    `;
+
+    // II-3. Q7 (量: 判断傾向) の結果表示
+    const typeII_3Analysis = getTypeII_3Analysis(results.typeII_3);
+    analysisArea.innerHTML += `
+        <div class="result-section">
+            <h3>【診断 II-3】「量」の字が示す判断傾向</h3>
+            <div class="individual-result" style="border-color:#d49100; background:#fff7e6;">
+                <h3 style="color:#d49100;">${typeII_3Analysis.name}</h3>
+                <p style="margin-top:15px; font-weight:bold; text-align: left;">${typeII_3Analysis.desc}</p>
+                <p style="font-size:0.9em; color:#555; margin-top:10px; text-align: left;">${typeII_3Analysis.detail}</p>
+            </div>
+        </div>
+    `;
+    
+    // III. 5段階評価の表示 (A, B, C の3軸)
+    chartsArea.querySelector('.chart-title').textContent = "【診断 III】3つの詳細性格 5段階評価";
+    renderStarRatings(results.radar, starRatingsContainer);
+
+    // 結果表示順序の修正 (DOM操作: I -> II-1, II-2, II-3 -> III の順)
+    const nextSibling = analysisArea.nextElementSibling;
+    resultContainer.insertBefore(chartsArea, nextSibling);
+
+
+    // V. アクションボタンの表示
+    btnArea.innerHTML = `
+        <button onclick="location.reload()" class="action-btn reload-btn">
+            もう一度診断する
+        </button>
+        <button onclick="shareOnX(results)" class="action-btn share-btn">
+            診断結果をXに投稿する
+        </button>
+        <button onclick="window.open('https://note.com/alc_chron2025', '_blank')" class="action-btn note-btn">
+            制作者noteプロフィール
+        </button>
+    `;
+}
+
+
+/* =====================
+ * 3. 複合型判定ロジック (変更なし)
+ * ===================== */
+// スコアを★5段階評価に変換
+function scoreToStars(score) {
+    const starRating = (score + 10) / 4;
+    return Math.max(0, Math.min(5, starRating)); 
+}
+
+// ★印文字列を生成
+function getStarString(starRating) {
+    const fullStar = '★'; 
+    const emptyStar = '☆'; 
+    const roundedStars = Math.round(starRating);
+    return fullStar.repeat(roundedStars) + emptyStar.repeat(5 - roundedStars);
+}
+
+// 診断 III の結果を★5段階評価としてHTMLに描画する (変更なし)
+function renderStarRatings(scores, container) {
+    let html = '';
+    const displayKeys = Object.keys(radarMapName);
+
+    displayKeys.forEach(key => {
+        const score = scores[key];
+        const starRating = scoreToStars(score);
+        const starString = getStarString(starRating);
+        
+        html += `
+            <div class="trait-item">
+                <span class="trait-name">${radarMapName[key]}</span>
+                <span class="stars" title="${score} / 10点">${starString}</span>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+// Xへの共有機能 (変更なし)
+function shareOnX(results) {
+    const topKeys = Object.keys(results.radar).sort((key1, key2) => results.radar[key2] - results.radar[key1]);
+    const topTrait = radarMapName[topKeys[0]] || "データなし";
+    const topScore = results.radar[topKeys[0]] || 0;
+    const matrixAnalysis = getMatrixAnalysis(results.matrix.X, results.matrix.Y);
+    const individualAnalysis = getTypeII_1Analysis(results.typeII_1);
+
+    const tweetText = `
+【筆跡診断結果】
+
+タイプI (行動特性)：『${matrixAnalysis.name}』
+タイプII-1 (責任感)：『${individualAnalysis.name}』
+//🖊️ 最も高い特性は「${topTrait}」(${topScore}/10点)
+
+あなたの筆跡傾向も診断してみませんか？
+#筆跡診断 #性格診断 #グラフォロジー
+[ここにアプリのURLを記述してください]
+    `.trim();
+
+    const encodedText = encodeURIComponent(tweetText);
+    const url = `https://twitter.com/intent/tweet?text=${encodedText}`;
+    window.open(url, '_blank');
+}
+
+
+// 診断 I: 行動特性マトリクス (変更なし)
+function getMatrixAnalysis(xScore, yScore) {
+    const isHighX = xScore > 0.3; 
+    const isLowX = xScore < -0.3;
+    const isHighY = yScore > 0.3;
+    const isLowY = yScore < -0.3;
+
+    if (isHighX && isHighY) {
+        return { name: "力強い開拓者", desc: "自己主張が強く、エネルギーに溢れています。チームを引っ張り、成果を出すことに喜びを感じるタイプです。", detail: "大きな文字と強い筆圧の持ち主。指示を待たず行動に移せますが、細部への配慮を忘れずに。" };
+    } else if (isLowX && isHighY) {
+        return { name: "柔和な調整者", desc: "主張は明確ですが、行動は慎重でエネルギーを温存します。戦略や企画立案に強みを発揮するタイプです。", detail: "大きな文字と控えめな筆圧の持ち主。内省的ですが、独自の視点を持っています。計画倒れにならないよう注意。" };
+    } else if (isLowX && isLowY) {
+        return { name: "思慮深い観察者", desc: "控えめで、周囲との調和を重視します。サポート役として、環境の安定化に貢献するタイプです。", detail: "小さな文字と弱い筆圧の持ち主。縁の下の力持ちですが、時に自己主張をすることも大切です。" };
+    } else if (isHighX && isLowY) {
+        return { name: "緻密な探求者", desc: "自己主張は控えめながら、実務的な行動力に優れています。黙々とタスクをこなす職人気質のタイプです。", detail: "小さな文字と強い筆圧の持ち主。目標達成へのエネルギーはありますが、自分の意見を出す訓練が必要です。" };
+    } else {
+        return { name: "平均的な実践者", desc: "エネルギーと自己主張のバランスが取れています。環境や相手に応じて柔軟に対応できる平均的なタイプです。", detail: "極端な傾向がなく、協調的です。状況を読んで、どの特性を出すか意識的にコントロールしましょう。" };
+    }
+}
+
+// renderMatrixChart関数の実装 (変更なし)
+function renderMatrixChart(xScore, yScore, canvasId) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    
+    if (window.matrixChartInstance) {
+        window.matrixChartInstance.destroy();
+    }
+    
+    window.matrixChartInstance = new Chart(ctx, { 
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'あなたの位置',
+                data: [{ x: xScore, y: yScore }],
+                backgroundColor: 'rgba(60, 76, 231, 0.7)', 
+                borderColor: 'rgba(255, 255, 255, 0.7)',
+                pointRadius: 18, 
+                pointHoverRadius: 24,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true, 
+            aspectRatio: 1,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => {
+                            return `X: ${context.parsed.x} / Y: ${context.parsed.y}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    type: 'linear',
+                    position: 'bottom',
+                    min: -1, 
+                    max: 1,  
+                    grid: { borderColor: '#000', borderWidth: 1, color: (context) => context.tick.value === 0 ? '#aaa' : 'rgba(0,0,0,0.1)' },
+                    title: { display: true, text: `◀ エネルギー・実行力 ▶︎`, font: { weight: 'bold' } }, 
+                    ticks: { stepSize: 1 }
+                },
+                y: {
+                    type: 'linear',
+                    position: 'left',
+                    min: -1, 
+                    max: 1,  
+                    grid: { borderColor: '#000', borderWidth: 1, color: (context) => context.tick.value === 0 ? '#aaa' : 'rgba(0,0,0,0.1)' },
+                    title: { display: true, text: `◀ 自己主張・表現力 ▶︎`, font: { weight: 'bold' } }, 
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    });
+}
+
+
+// 診断 II-1: Q3 (様) (変更なし)
+function getTypeII_1Analysis(typeIndex) {
+    const types = [
+        { name: "🔥強固なコミット型", desc: "目標達成への責任感が強い実行者", detail: "目標達成のために自ら積極的に動き、困難を乗り越える責任感を持っています。反面、周りの意見を顧みない独走傾向も。" }, 
+        { name: "🤝協調的サポート型", desc: "周囲との調和を重んじる責任感", detail: "表立って責任を負うより、組織やリーダーを支えることで責任を果たそうとします。調整役としての能力が高いです。" }, 
+        { name: "🌏包摂的な責任型", desc: "他者への寛容さを持つ大きな責任感", detail: "チーム全体や仲間を広い心で受け止め、包括的に責任を負おうとします。おおらかで安心感を与えます。" }, 
+        { name: "👤自己完結型", desc: "自分の領域にのみ強い責任を持つ職人", detail: "他者の介入を嫌い、自分の興味や専門分野に対しては非常に強い責任感を持ちますが、それ以外の領域は割り切る傾向があります。" }, 
+        { name: "🛡️規範遵守型", desc: "ルールと約束を守る堅実な責任感", detail: "伝統や形式を重んじ、一度決めたルールや約束は厳格に守り抜こうとします。反面融通がきかないところがある。" }, 
+        { name: "💧柔軟・流動型", desc: "対人配慮ゆえに責任の線引きが曖昧", detail: "周囲の状況や感情に配慮しすぎるため、責任を負うべき場面で一歩引いてしまうことがあります。優しさゆえの優柔不断さです。" } 
+    ];
+    return types[typeIndex] || { name: "未回答", desc: "診断II-1が未回答のため、分析できませんでした。", detail: "もう一度診断するボタンから、全問回答をお試しください。" };
+}
+
+// 診断 II-2: Q5 (木) (変更なし)
+function getTypeII_2Analysis(typeIndex) {
+    const types = [
+        { name: "華やかな自己顕示型", desc: "華やかさがあり、強い自己顕示欲を持つ外向的なタイプ。", detail: "推進力と行動力がありますが、周囲への配慮を欠くことがあります。" }, 
+        { name: "均衡の取れた調和型", desc: "自己顕示と熱中のバランスが良く、安定感のあるタイプ。", detail: "協調性が高く、過度なのめり込みや過度な自己主張をしません。" }, 
+        { name: "深い熱中・のめり込み型", desc: "強い集中力で物事に深くのめり込む内省的なタイプ。", detail: "探究心が深く、驚くべき成果を出すこともありますが、周囲が見えなくなることがあります。" } 
+    ];
+    return types[typeIndex] || { name: "未回答", desc: "診断II-2が未回答のため、分析できませんでした。", detail: "" };
+}
+
+// 診断 II-3: Q7 (量) (変更なし)
+function getTypeII_3Analysis(typeIndex) {
+    const types = [
+        { name: "論理的判断型", desc: "情報を整理し、筋道を立てて論理的に判断する傾向が強い。", detail: "客観的な根拠に基づく正確な意思決定が得意です。" }, 
+        { name: "直感的判断型", desc: "瞬時のひらめきや直感を重視して判断する傾向が強い。", detail: "状況を瞬時に把握し、柔軟でスピーディな意思決定が得意です。" } 
+    ];
+    return types[typeIndex] || { name: "未回答", desc: "診断II-3が未回答のため、分析できませんでした。", detail: "" };
+}
+</script>
+
+</body>
+</html>
