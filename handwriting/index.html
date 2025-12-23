@@ -343,18 +343,18 @@ const questions = [
         id: 1, type: 'i', text: "書いた文字の大きさは？", 
         mainImage: "images/size.jpg",
         choices: [
-            { label: "A. マス目いっぱいの大きさ", scores: { X: 0.2, Y: 0.4 } }, 
+            { label: "A. マス目いっぱいの大きさ", scores: { X: 0.4, Y: 0.2 } }, 
             { label: "B. 中くらいの大きさ", scores: { X: 0, Y: 0 } }, 
-            { label: "C. 余白が余るくらいに小さい", scores: { X: -0.2, Y: -0.4 } } 
+            { label: "C. 余白が余るくらいに小さい", scores: { X: -0.4, Y: -0.2 } } 
         ], answer: null 
     },
     { 
         id: 2, type: 'i', text: "筆圧の強さは？", 
         mainImage: "images/strong.jpg",
         choices: [
-            { label: "A. 強い", scores: { X: 0.4, Y: 0.2 } }, 
+            { label: "A. 強い", scores: { X: 0.2, Y: 0.4 } }, 
             { label: "B. ふつう", scores: { X: 0, Y: 0 } }, 
-            { label: "C. 弱い", scores: { X: -0.4, Y: -0.2 } } 
+            { label: "C. 弱い", scores: { X: -0.2, Y: -0.4 } } 
         ], answer: null 
     },
     {
@@ -373,10 +373,10 @@ const questions = [
         id: 4, type: 'iii', text: "「日」の筆跡はどれに近いですか？", 
         mainImage: "images/nichi.jpg",
         choices: [
-            { label: "A. すき間がなく、角が正確 (ルールに対して厳格)", scores: { A: 6, B: -4, C: 0 } }, 
+            { label: "A. すき間がなく、角が正確", scores: { A: 6, B: -4, C: 0 } }, 
             { label: "B. 少しすき間があり、角は正確", scores: { A: 2, B: 2, C: 0 } }, 
-            { label: "C. 右上角が丸い (柔軟/適応)", scores: { B: 6, A: -4, C: 0 } }, 
-            { label: "D. すき間があり、右上角も丸い (ルールに対してルーズ)", scores: { B: 4, A: -6, C: 0 } } 
+            { label: "C. 右上角が丸い", scores: { B: 6, A: -4, C: 0 } }, 
+            { label: "D. すき間があり、右上角も丸い", scores: { B: 4, A: -6, C: 0 } } 
         ], answer: null 
     },
     { 
@@ -409,7 +409,7 @@ const questions = [
         id: 8, type: 'iii', text: "「子」の筆跡はどれに近いですか？", 
         mainImage: "images/ko.jpg",
         choices: [
-            { label: "A. 最後のはねの部分が大きく、力強くはねている", scores: { C: 10, A: 0, B: 0 } }, 
+            { label: "A. 最後のはねの部分が力強い", scores: { C: 10, A: 0, B: 0 } }, 
             { label: "B. 最後のはねの部分の大きさは中程度", scores: { C: 0, A: 0, B: 0 } }, 
             { label: "C. 最後のはねの部分が小さい、またはほとんどはねていない", scores: { C: -8, A: 0, B: 0 } } 
         ], answer: null 
