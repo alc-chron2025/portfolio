@@ -726,10 +726,10 @@ function shareOnX(results) {
 // 診断 I: 行動特性マトリクス (変更なし)
 function getMatrixAnalysis(xScore, yScore) {
     const isHighX = xScore > 0.3;
-    const isMiddleX = xScore = 0;
+    const isMiddleX = xScore == 0;
     const isLowX = xScore < -0.3;
     const isHighY = yScore > 0.3;
-    const isMiddleY = yScore = 0;
+    const isMiddleY = yScore == 0;
     const isLowY = yScore < -0.3;
 
     if (isHighX && isHighY) {
