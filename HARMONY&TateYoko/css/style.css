@@ -1,0 +1,530 @@
+@charset "UTF-8";
+
+/* レスポンシブ対応に必要なコンテナ設定（グラフの親要素） */
+.chart-container {
+position: relative;
+margin: 0 auto;
+width: 100%;
+max-width: 580px; /* PCでの最大幅 */
+height: auto;
+margin-bottom: 40px;
+}
+
+title{
+text-align: center;
+}
+
+body{
+text-align: center;
+}
+
+h1{
+margin: 0 auto;
+}
+
+#kaitou_joukyou{
+height: 180px;
+}
+
+#question_erea{
+display: flex;
+flex-direction: column;
+align-items: flex-start; /* ← 左揃えで縦に並べる */
+width: fit-content; /* 必要な幅だけ確保 */
+margin-left: 37%; /* ← 元のPC設定を維持 */
+gap: 12px;
+
+animation: fadeIn 2s ease forwards;
+}
+
+#question_erea1>p {
+margin-top: 20px;
+margin-bottom: 0;
+}
+
+#question_erea2,#question_erea3{
+height: 60px;
+margin-left: 30px;
+font-size: 20px;
+padding: 0;
+margin: 0;
+text-align: left;
+}
+
+#question_erea2{
+padding-bottom: 30px; /*question_erea2の下部にスペースを作る*/
+}
+
+#option1,#option2,#option3,#option4,#option5{
+margin-left: 30px;
+font-size: 18px;
+}
+
+#graph-position{
+display: block;
+text-align: center;
+}
+
+#wrap{
+display: flex;
+align-items: flex-start; /* ← 上端を揃える */
+margin: 0 auto;
+}
+
+#canvas1,#canvas2{
+width: 400px;
+height: 300px;
+}
+
+#Charterea{
+display: flex; /*flex;block;*/
+gap: 20px;
+justify-content: center;
+}
+
+#myChart{
+margin: 0 auto;
+
+max-width: 580px;
+max-height: 350px;
+/* width: 520px; <-- レスポンシブ対応のため削除 */
+height: 350px;
+margin-top: 0;
+margin-bottom: 80px; /* 下に●●●pxのスペースを追加 */
+
+display: block; /*★*/
+
+animation: fadeIn 10s ease forwards;
+}
+
+#myRadarChart{
+margin: 0 auto;
+padding: 0;
+
+max-width: 580px;
+max-height: 580px;
+/* width: 580px; <-- レスポンシブ対応のため削除 */
+height: 580px;
+margin-top: -80px;
+margin-bottom: 80px; /* 下に●●●pxのスペースを追加 */
+
+
+display: block; /*★*/
+
+animation: fadeIn 12s ease forwards;
+}
+
+
+strong {
+font-size: 26px;
+color:black;
+}
+
+canvas {
+display: block;
+text-align: center;
+max-width: 100%; /* ★追加：親要素に収まるようにする */
+height: auto !important; /* ★追加：高さを柔軟に調整する */
+}
+
+
+button {
+border-radius: 16px;
+border: 2px solid; /* 枠線の太さと色 */
+cursor: pointer; /* ホバー時にポインタに */
+}
+
+
+
+#start {
+width: 350px;
+height: 60px;
+margin: 0 auto;
+font-size: 32px;
+font-weight: bold;
+background-color: rgba(0,150,250, 0.9); /* 背景色 */
+color: white; /* 文字色 */
+padding: 6px 24px; /* 高さと横幅の余白 → サイズ調整 */
+border-radius: 14px; /* 角丸（ピクセル数で半径指定） */
+transition: transform 0.2s ease; /* ★拡大をなめらかに */
+}
+#start:hover {
+background-color: rgba(0, 150, 250, 0.6); /* 背景色（ここでは緑） */
+color: white; /* 文字色 */
+font-weight: bold;
+transform: scale(1.01); /* ★1%拡大 */
+}
+
+/* ★★★ スピナー（ローディング演出）の修正エリア ★★★ */
+#start2{
+/* 修正: 画面全体を覆う */
+position: fixed;
+top: 0;
+left: 0;
+width: 100vw;   /* ビューポートの幅全体 */
+height: 100vh;  /* ビューポートの高さ全体 */
+z-index: 9999; /* 最前面に表示 */
+
+/* 修正: コンテンツを画面中央に配置 */
+display: flex;
+justify-content: center;
+align-items: center;
+
+/* 既存設定の維持/調整 */
+margin: 0; /* 中央寄せ用のマージンを削除 */
+padding: 0;
+font-size: 8px;
+font-weight: bold;
+background-color: rgb(0,150,250);
+color: #dfdfff;
+
+border-radius: 0; /* 画面全体を覆うため角丸をリセット */
+transition: transform 1s ease; /* ★拡大をなめらかに */
+transform: scale(4); /* ★400%拡大 */
+cursor: default;
+}
+/* ★★★ 修正エリアここまで ★★★ */
+
+
+#button_wrap {
+display: flex;
+justify-content: center; /* 中央寄せ */
+gap: 40px; /* ボタン間の距離 */
+align-items: center; /* 縦位置も揃えるなら */
+position: relative;
+margin-top: 70px; /* 任意の余白 */
+}
+
+
+#next{
+width: 120px; /* 元の幅に戻す */
+height: 80px;
+font-size: 1.1em;
+background-color: rgba(0,150,250, 0.9); /* 背景色 */
+color: white;/* 文字色 */
+
+position: absolute;
+left: 58%; /* ユーザーの設定を維持 */
+top: 50%;
+transform: translate(-50%, -50%);
+
+animation: fadeIn 3s ease forwards;
+}
+
+#back{
+width: 120px; /* 元の幅に戻す */
+height: 80px;
+font-size: 0.9em;
+/*font-weight: bold;*/
+background-color: rgba(255,255,255, 0.9);
+border-color: rgba(0,150,250, 0.9);
+color: rgba(0,150,250, 0.9);; /*文字色*/
+
+position: absolute;
+left: 42%; /* ユーザーの設定を維持 */
+top: 50%;
+transform: translate(-50%, -50%);
+
+animation: fadeIn 4s ease forwards;
+}
+
+#next,#back{
+padding: 6px 20px; /* 高さと横幅の余白 → サイズ調整 */
+border-radius: 50%; /* 角丸（ピクセル数で半径指定） */
+}
+
+#next:hover {
+background-color: rgba(0,150,250, 0.5); /* ホバー時の背景色 */
+font-weight: bold;
+}
+
+#back:hover {
+background-color: rgba(0,150,250, 0.6); /* ホバー時の背景色 */
+color: white;/* 文字色 */
+font-weight: bold;
+}
+
+#graph_go,#mikaitou_go,#zenminaoshi_go {
+display: none;
+/*display: block; /* ← テスト用に強制的に表示 */
+width: 200px;
+height: 36px;
+text-align: center;
+margin: 0 auto;
+margin-bottom: 20px;
+font-size: 18px;
+color: white;
+font-weight: bold;
+border: double;
+border-radius: 999px;
+background-color: rgba(0,150,250, 1); /* 背景色 */
+transition: transform 0.2s ease; /* ★拡大をなめらかに */
+
+animation: fadeIn 7s ease forwards;
+}
+
+#kaitou_joukyou_go{
+width: 160px;
+height: 28px;
+padding: 0 auto;
+text-align: center;
+font-size: 14px;
+color: white;
+border: double;
+border-radius: 999px;
+background-color: rgba(50,50,50,0.9);
+}
+#kaitou_joukyou_go:hover{
+background-color: rgba(50,50,50,0.6);
+}
+
+#graph_go:hover,#mikaitou_go:hover,#zenminaoshi_go:hover {
+background-color: rgba(0,150,250, 0.4); /* ホバー時の背景色 */
+transform: scale(1.02); /* ★2%拡大 */
+font-weight: bold;
+}
+
+#kekka {
+text-align: center;
+padding: 0 auto;
+}
+
+#table_wrap{
+display: none;
+padding: 0 auto;
+margin-top: 50px;
+margin-bottom: 20px;
+max-width: 405px; /* テーブルの最大幅を適度に設定 */
+margin-left: auto;
+margin-right: auto;
+}
+.visible{
+margin-top: 20px;
+display: block;
+animation: fadeIn 3s ease forwards;
+}
+@keyframes fadeIn {
+from { opacity: 0; }
+to { opacity: 1; }
+}
+
+table {
+border-collapse: collapse;
+border-spacing: 0;
+background-color: #fff;
+}
+
+#myTable{
+display: flex;
+flex-wrap: wrap;
+row-gap: 16px;
+column-gap: 0px;
+/*flex: 1 1 300px; /* 最小幅300px、可能なら広がる */
+justify-content: center; /* 水平方向 */
+max-width: 405px;
+margin: 0 auto;
+}
+
+tr, th, td {
+padding: 6px;
+}
+
+th{
+width: 25px;
+}
+
+td{
+width: 150px;
+text-align: center;
+font-size: 20px;
+}
+
+
+tr.answered {
+background-color: rgba(0, 150, 250, 0.2);
+font-weight: bold;
+}
+
+
+#sankoubunken {
+width: 75%;
+max-width: 500px;
+margin: 2em auto; /* センター配置 */
+padding: 1.5em;
+background-color: #f9f9f9;
+border: 1px solid #ddd;
+border-radius: 8px;
+text-align: left; /* ブロック内は左寄せ */
+box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+font-family: "Helvetica", sans-serif;
+}
+
+#sankoubunken strong.sankoubunken {
+display: block;
+font-size: 1.2em;
+margin-bottom: 1em;
+color: #333;
+}
+
+#sankoubunken ul {
+list-style-type: none;
+padding-left: 0;
+}
+
+#sankoubunken small {
+font-size: 0.9em;
+color: #555;
+}
+
+#sankoubunken a {
+color: #0066cc;
+text-decoration: underline;
+}
+
+
+/* ★追加: 説明文 (.explain) のPC/共通設定 */
+.explain {
+/* 中央配置 */
+text-align: center;
+margin: 30px auto;
+/* PCでの最大幅を質問エリアやグラフに合わせる */
+max-width: 580px;
+font-size: 18px; /* 基本のフォントサイズ */
+}
+.explain p {
+line-height: 1.6; /* テキストが読みやすくなるように行間を設定 */
+margin: 0;
+padding: 0;
+}
+
+
+#harmony_Canvas,
+#square_Canvas,
+#harmony_table,
+#harmony_table td,
+#square_table,
+#square_table td {
+margin: 0 auto;
+font-size: 1em;
+}
+
+#harmony_table th:nth-child(1) {
+width: 50px;
+}
+
+#harmony_table td:nth-child(2) {
+width: 120px;
+}
+
+#harmony_table td:nth-child(3) {
+width: 180px;
+}
+
+#harmony_table td:nth-child(4) {
+width: 80px;
+text-align: right;
+}
+
+#harmony_table td:nth-child(5) {
+width: 80px;
+text-align: right;
+}
+
+#harmony_table td:nth-child(2),
+#harmony_table td:nth-child(3){
+text-align: left;
+}
+
+.explain {
+text-align: left;
+}
+
+#maeoki {
+text-align: center;
+}
+
+/**/
+.button-container {
+display: flex;
+flex-direction: column; /* ← 縦並び */
+align-items: center; /* ← 横中央揃え */
+gap: 12px; /* ボタン間の余白 */
+margin-top: 20px;
+}
+
+.button-container button {
+padding: 10px 20px;
+width: 300px; /* ← 任意。幅をそろえると見栄えアップ */
+font-size: 16px;
+cursor: pointer;
+border-radius: 6px;
+border: none;
+background: #3498db;
+color: white;
+}
+
+/**/
+
+
+/* === スマホ対応（グラフとボタン配置のレスポンシブ維持） === */
+@media screen and (max-width: 600px) {
+
+/* ボタン配置エリアのスマホ化 */
+#button_wrap {
+margin-top: 30px;
+height: auto;
+gap: 15px;
+position: static; /* 絶対配置の解除 */
+}
+
+/* Next / Back ボタンを並べる */
+#next, #back {
+position: static; /* 絶対配置解除 */
+transform: none; /* 中央寄せ解除 */
+width: 45%; /* 元の設定に戻す */
+height: 60px;
+border-radius: 30px;
+font-size: 16px;
+}
+
+/* 質問エリアの調整 */
+#question_erea {
+margin-left: 0; /* PCで設定されていた固定値を解除 */
+width: 100%;
+padding: 0 10px;
+box-sizing: border-box;
+}
+
+/* 質問文・選択肢のインデントを削除とフォントサイズ調整 */
+#question_erea2, #question_erea3,
+#option1, #option2, #option3, #option4, #option5 {
+margin-left: 0 !important; /* PC側の固定値 (30px) を強制的に上書き */
+padding-left: 5px; /* 左端に詰めすぎないよう微調整 */
+}
+
+/* ★変更: 質問文だけさらに小さくする (pタグ全体への影響を避けるためセレクタを調整) */
+#question_erea2, #question_erea3 {
+font-size: 14px;
+}
+
+/* ★変更: 選択肢は質問文よりわずかに大きく*/
+#option1, #option2, #option3, #option4, #option5 {
+font-size: 15px; /* 16px から 15px に変更し、質問文との差を微調整 */
+}
+
+/* ★追加: 説明文 (.explain) のレイアウト調整 */
+.explain {
+max-width: 100%; /* 幅を画面いっぱいに */
+padding: 0 10px; /* 左右に少し余白を設ける */
+box-sizing: border-box;
+font-size: 15px; /* 文字を小さくして改行を防ぐ (15px) */
+margin: 15px auto; /* スマホでは上下の余白も少し減らす */
+}
+
+/* ★追加: .explain内のpタグのサイズを親要素に合わせる */
+.explain p {
+font-size: 14px; /* 親の .explain のフォントサイズを継承（明示的に指定） */
+text-align: left;
+}
+
+}

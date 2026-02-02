@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心理的安全性のHARMONY診断Ⅱ♪</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/ress.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0" defer></script>
+    <script src="js/app.js" defer></script>
+  </head>
+  <body>
+    <br>
+  
+  <div><h1 id="midashi">心理的安全性の分析Ⅱ</h1>
+    <br>
+    <p>～ 心理的安全性のHARMONY診断Ⅱ♪ ～</p>
+    
+  
+    <div id="maeoki" class="explain">
+    <br><br><br> 
+      <p>
+      これから出題する質問に対して、あなたの考えに<br><br>
+      最も近い回答を選択肢の中から選んでください。<br><br>
+      質問は全部で<strong style="font-size: 24px;">&nbsp;15問&nbsp;</strong>あります。</p><br>
+    </div>
+
+    <h1 id="midashi2" style="display: none">診断結果</h1>
+    
+    <br><br>
+
+    <div id="mode1" style="display: none">
+        <span style="color: #111; font-size: 12px; background-color: rgba(100,220,250,1); border-radius: 999px;"><small>&nbsp;&nbsp;&nbsp;&nbsp;進捗ゲージ&nbsp;&nbsp;&nbsp;&nbsp;</small></span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <progress id="progress" value="0"  max="100"></progress>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    </div>
+    <div id="mode2" style="display: none">
+        <span style="color: #111; font-size: 12px; background-color: rgba(250,220,0,1); border-radius: 999px;"><small>&nbsp;&nbsp;&nbsp;&nbsp;未回答巡回中&nbsp;&nbsp;&nbsp;&nbsp;</small></span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span id="mikaitou_nokori" style="color: #555">未回答は残り●問です</span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    </div>
+    <div id="mode3" style="display: none">
+        <span style="color: #111; font-size: 12px; background-color: rgba(0,250,0,1); border-radius: 999px;"><small>&nbsp;&nbsp;&nbsp;&nbsp;全問見直し中&nbsp;&nbsp;&nbsp;&nbsp;</small></span>
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <button id="kaitou_joukyou_go">回答状況一覧へ</button>
+    </div>
+    
+      
+    <div id="kaitou_joukyou" style="display: none">        
+        <strong style="font-size: 36px; text-align: center;">【 回答状況一覧 】</strong><br><br>
+        <div id="myZone">       
+        </div>
+        <button id="zenminaoshi_go" style="display: none">回答をすべて見直す</button>
+        <button id="mikaitou_go" style="display: none">未回答の質問へ進む</button>
+        <button id="graph_go" style="display: none">診断結果を表示する</button>
+        <br><br>
+    </div>
+      
+
+    <div id="table_wrap">
+
+        <div class="scroll-table">
+            <table id="Table_midashi" border="1">
+            </table>
+
+            <div id="myTable"><br>
+               <table id="myTable1" border="1">
+                <tr><th>1</th><td id="data1">① ② ③ ④ ⑤</td></tr>
+                <tr><th>2</th><td id="data2">① ② ③ ④ ⑤</td></tr>
+                <tr><th>3</th><td id="data3">① ② ③ ④ ⑤</td></tr>
+                <tr><th>4</th><td id="data4">① ② ③ ④ ⑤</td></tr>
+                <tr><th>5</th><td id="data5">① ② ③ ④ ⑤</td></tr>
+                <tr><th>6</th><td id="data6">① ② ③ ④ ⑤</td></tr>
+                <tr><th>7</th><td id="data7">① ② ③ ④ ⑤</td></tr>
+                <tr><th>8</th><td id="data8">① ② ③ ④ ⑤</td></tr>                 
+              </table>
+
+              <table id="myTable2" border="1">
+                <tr><th>9</th><td id="data9">① ② ③ ④ ⑤</td></tr>
+                <tr><th>10</th><td id="data10">① ② ③ ④ ⑤</td></tr>
+                <tr><th>11</th><td id="data11">① ② ③ ④ ⑤</td></tr>
+                <tr><th>12</th><td id="data12">① ② ③ ④ ⑤</td></tr>
+                <tr><th>13</th><td id="data13">① ② ③ ④ ⑤</td></tr>
+                <tr><th>14</th><td id="data14">① ② ③ ④ ⑤</td></tr>
+                <tr><th>15</th><td id="data15">① ② ③ ④ ⑤</td></tr>   
+              </table>
+            </div>
+        </div></div>
+
+    
+    <button id="start" style="display: block">スタート</button>
+
+    <div id="question_zone">
+    </div>
+
+  </div><div id="harmony" style="display: none">
+
+
+<br>
+<h2>【 人間関係・コミュニケーションのタテヨコ詳細分析 】</h2>
+<br>
+<div class="explain">
+<p>
+MPB48における人間関係・コミュニケーション
+のタテヨコ詳細分析では、上司－部下間における
+タテ関係の満足度と同僚などのヨコ関係の満足度を
+それぞれ10点満点で評価し、その2つを重ね合わせた
+図で表現しています。
+</p></div>
+
+<br><br>
+
+<div class="chart-container" style="position: relative; height:300px; width:100%">
+    <canvas id="square_Canvas"></canvas>
+</div>
+<br>
+<table id="square_table" border="0">
+    <tr>
+      <td>タテの関係</td>
+      <td id="score_tate">-</td>
+    </tr>
+    <tr>
+      <td>ヨコの関係</td>        
+      <td id="score_yoko">-</td>
+    </tr>
+    <tr>
+      <td>G-R補正バランス</td>        
+      <td id="score_GRB">-</td>
+    </tr>
+</table>
+<br>
+<div class="explain">
+<p>
+タテとヨコの点数のうち、
+重複エリアを緑色にすることで、タテヨコの関係性に
+よる相乗効果の見える化を試みています。
+逆に、タテヨコの不満足の重複部分は赤色で表現されて
+います。
+<br>
+なお、『G-R補正バランス』はチーム
+にプラスの効果が働いているGain状態なのか、
+それともチームにマイナスの効果が働いている
+Reduction状態なのかを+8から-12の値の範囲で表示しています。<br><br>
+
+…と言いつつ、本当はGreen（緑）とRed（赤）の面積に着目し、
+タテの関係のスコアに補正をかけつつ面積差を+8から-12にスケール化したものです。
+
+<br>
+<small>※『G-R補正バランス』は、MPBのオリジナル指標として考えてみました。</small>
+</p></div>
+
+
+<br><br><br><br><br>
+
+
+
+
+
+<!--<h2>【 HARMONY♪フレームワークによる心理的安全性の詳細 】</h2>
+<br>-->
+<div class="explain">
+<p>
+『HARMONYフレームワーク』では、
+「トライゴンハニカムチャート®」（略称トラハニチャート）の
+基本形状とコンセプトづくりの思想を土台としています。<br>
+
+さらに、「心理的安全性の核（Your Presence）」に至るまでの過程を
+トラハニチャートで構造化しました。<br>
+そして、その関係性の見える化に対して、点数評価を試みています。
+</p></div>
+
+<br><br>
+
+<div class="chart-container" style="position: relative; height:400px; width:100%">
+    <canvas id="harmony_Canvas"></canvas>
+</div>
+
+<div class="scroll-table">
+  <table id="harmony_table" border="1">
+    <thead>
+      <tr>
+        <th>頭文字</th>
+        <th>キーワード</th>
+        <th>意味するところ</th>
+        <!--<th>構造</th>-->
+        <th>点数</th>
+      </tr>
+    </thead>
+      <tr>
+        <th>H</th>
+        <td>Help</td>
+        <td>支援する組織文化</td>
+        <!--<td>基本の価値観①</td>-->
+        <td id="score_H">-</td>
+      </tr>
+      <tr>
+        <th>A</th>
+        <td>Acceptance</td>
+        <td>受容する組織文化</td>
+        <!--<td>基本の価値観②</td>-->        
+        <td id="score_A">-</td>
+      </tr>
+      <tr>
+        <th>R</th>
+        <td>Reliability</td>
+        <td>信頼する組織文化</td>
+        <!--<td>基本の価値観③</td>-->        
+        <td id="score_R">-</td>
+      </tr>
+      <tr>
+        <th>M</th>
+        <td>Mutuality</td>
+        <td>相互理解による安心感</td>
+        <!--<td>H×Aの組み合せ</td>-->        
+        <td id="score_M">-</td>
+      </tr>
+      <tr>
+        <th>O</th>
+        <td>Ownership</td>
+        <td>自律/裁量による安心感</td>
+        <!--<td>A×Rの組み合せ</td>-->        
+        <td id="score_O">-</td>
+      </tr>
+      <tr>
+        <th>N</th>
+        <td>Nurture</td>
+        <td>育成支援による安心感</td>
+        <!--<td>R×Hの組み合せ</td>-->        
+        <td id="score_N">-</td>
+      </tr>
+      <tr>
+        <th>Y</th>
+        <td>Your Presence</td>
+        <td>★心理的安全性の核★</td>
+        <!--<td>すべての集約点</td>-->       
+        <td id="score_Y">-</td>
+      </tr>       
+  </table>
+</div>
+<div class="explain">
+<p>
+<small>※「トライゴンハニカムチャート®」は、
+価値観・関係性・意味の統合を幾何学的に表現する
+コンセプト作り手法です（詳細は下記の文献をご参考ください）。</small>
+</p></div>
+
+
+<section id="sankoubunken">
+    <strong class="sankoubunken">参考文献</strong>
+    <ul>
+      <li>
+        <small>
+          書名：『ビジネスを成功させるコンセプトづくりのフレームワーク』<br>
+          著者：野﨑晴行<br>
+          出版社：中央経済社<br>
+          出版年：2019年<br>
+          ISBN：978-4502317613<br>
+        </small>
+      </li>
+    </ul>
+</section>
+
+<div id="result-buttons" style="text-align: center; margin-top: 30px; margin-bottom: 50px;"></div>
+
+</div>
+ </body>
+</html>
